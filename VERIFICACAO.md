@@ -1,3 +1,15 @@
+# Verificação da entrega 0.6.8
+
+- Compilação release e instalador NSIS concluídos.
+- Executável: ProductVersion 0.6.8; --smoke-test terminou com saída 0, sem comunicação USB.
+- Prévia em 1440×900 e 1100×720: sem overflow horizontal; estatísticas à direita e abaixo, respectivamente; ilustração ausente.
+- Alteração visual; não houve nova auditoria de dependências, avaliação auditiva ou instalação/desinstalação nesta entrega.
+- A execução anterior de CI no GitHub foi bloqueada por cobrança da conta antes de iniciar um runner; não há resultado aprovado de CI nesta alteração.
+
+Os resultados anteriores abaixo são históricos, referentes à entrega 0.6.7.
+
+---
+
 # Verificação — AM8 Lab 0.6.7
 
 07/10/2026. Redesign baseado na exportação de Voz e no guia visual do Stitch, adaptado às funções existentes do AM8 Lab. Backend de DSP, limites, compatibilidade e recuperação preservados. Não houve nova avaliação auditiva nem alteração real de parâmetros USB durante esta implementação.

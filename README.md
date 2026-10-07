@@ -7,10 +7,10 @@
 **Software experimental para ajustar sua voz e os fones no DSP do FIFINE AM8 USB.**
 
 ![Windows 10/11 x64](https://img.shields.io/badge/Windows-10%2F11%20x64-0078D4?style=flat-square)
-![Versão 0.6.7 experimental](https://img.shields.io/badge/vers%C3%A3o-0.6.7%20experimental-8B5CF6?style=flat-square)
+![Versão 0.6.8 experimental](https://img.shields.io/badge/vers%C3%A3o-0.6.8%20experimental-8B5CF6?style=flat-square)
 [![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-22C55E?style=flat-square)](LICENSE)
 
-**[Baixar instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.6.7/AM8-Lab-Setup-v0.6.7.exe)** · [Versão portátil](https://github.com/NightXXT/am8lab/releases/download/v0.6.7/AM8-Lab-Portable-v0.6.7.zip) · [Hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.6.7/SHA256SUMS.txt) · [Release 0.6.7](https://github.com/NightXXT/am8lab/releases/tag/v0.6.7)
+**[Baixar instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.6.8/AM8-Lab-Setup-v0.6.8.exe)** · [Versão portátil](https://github.com/NightXXT/am8lab/releases/download/v0.6.8/AM8-Lab-Portable-v0.6.8.zip) · [Hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.6.8/SHA256SUMS.txt) · [Release 0.6.8](https://github.com/NightXXT/am8lab/releases/tag/v0.6.8)
 
 [Instalação](#instalação) · [Atualizações](#atualizações) · [Recursos](#recursos) · [Compatibilidade](#compatibilidade) · [Segurança](SECURITY.md) · [English](README.en.md)
 
@@ -30,6 +30,10 @@ Construído com **Rust + Tauri**, com interface em português, medidores de áud
 ![AM8 Lab: tela Estúdio com dados simulados](docs/assets/studio-preview.png)
 
 *Prévia da interface com dados simulados. Os medidores do aplicativo conectado usam leituras HID relativas, sem calibração em dB.*
+
+### Ajuste visual na 0.6.8
+
+A ilustração do microfone foi removida do painel Estúdio. As informações de USB, filtros e firmware ocupam o lado direito nas janelas amplas e ficam abaixo do texto nas janelas menores.
 
 ## Recursos
 
@@ -85,8 +89,8 @@ Os medidores usam uma **escala visual relativa**, sem calibração em dB. A resp
 
 **Requisitos:** Windows 10/11 x64, WebView2 e AM8 USB compatível.
 
-1. Abra a [Release 0.6.7](https://github.com/NightXXT/am8lab/releases/tag/v0.6.7).
-2. Baixe o [instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.6.7/AM8-Lab-Setup-v0.6.7.exe) e os [hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.6.7/SHA256SUMS.txt).
+1. Abra a [Release 0.6.8](https://github.com/NightXXT/am8lab/releases/tag/v0.6.8).
+2. Baixe o [instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.6.8/AM8-Lab-Setup-v0.6.8.exe) e os [hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.6.8/SHA256SUMS.txt).
 3. Confira o hash conforme [o guia de instalação](docs/INSTALL.md) e execute o setup.
 4. Conecte o AM8 por **USB** e abra o programa.
 
@@ -95,7 +99,7 @@ O setup instala para o usuário atual, cria atalhos e inclui desinstalador. Se o
 <details>
 <summary><strong>Prefere uma versão portátil?</strong></summary>
 
-Baixe `AM8-Lab-Portable-v0.6.7.zip` nas Releases, confira o hash, extraia a pasta e abra `AM8-Lab.exe`. Mantenha os arquivos de licença que acompanham o programa. WebView2 precisa estar instalado.
+Baixe `AM8-Lab-Portable-v0.6.8.zip` nas Releases, confira o hash, extraia a pasta e abra `AM8-Lab.exe`. Mantenha os arquivos de licença que acompanham o programa. WebView2 precisa estar instalado.
 
 </details>
 
@@ -176,6 +180,14 @@ Ainda não. A validação física cobriu **uma unidade do AM8 normal com firmwar
 
 Use **Atualizações → Verificar atualizações → Baixar instalador**. Confira o hash, feche o aplicativo normalmente para restaurar a sessão e execute o novo setup. A instalação é manual; não há atualização de firmware. As [Releases](https://github.com/NightXXT/am8lab/releases) também podem ser acessadas pelo navegador.
 
+### O EQ dos fones muda o áudio dos jogos e do Discord?
+
+Sim, quando esse áudio sai pelo dispositivo de reprodução do AM8 e é ouvido no P2 dele. Outra placa de som ou um fone USB não passa por esse EQ.
+
+### Tem RGB ou afinação automática?
+
+Não. Esses recursos estão fora desta versão. Os efeitos experimentais e seus limites estão identificados na interface e nesta documentação.
+
 ## Limitações conhecidas
 
 > [!WARNING]
@@ -193,7 +205,7 @@ Use **Atualizações → Verificar atualizações → Baixar instalador**. Confi
 
 A interface permite somente comandos próprios tipados e escuta de eventos. Os valores são validados no Rust; o app não oferece comandos genéricos de shell, rede ou arquivos pela interface. Ele não grava voz, não faz upload de áudio e não inclui telemetria de rede. A consulta manual de atualizações acessa a API pública do GitHub por HTTPS e informa a versão do app no User-Agent.
 
-Nesta versão, **42 testes Rust passaram**, incluindo 11 testes novos para selecionar Releases, versões, limites e URLs de atualização, além de 17 verificações da interface de atualizações com transporte simulado. O resumo do teste do executável, instalador e consulta real está em [verificação da consulta](docs/UPDATES.md#verificação). Os testes históricos de efeitos e ganho continuam documentados em seus relatórios, sem nova avaliação auditiva nesta alteração.
+Na versão 0.6.7, **42 testes Rust passaram**, incluindo 11 testes novos para selecionar Releases, versões, limites e URLs de atualização, além de 17 verificações da interface de atualizações com transporte simulado. O resumo do teste do executável, instalador e consulta real está em [verificação da consulta](docs/UPDATES.md#verificação). Os testes históricos de efeitos e ganho continuam documentados em seus relatórios, sem nova avaliação auditiva nesta alteração.
 
 A revisão da versão 0.6.3 encontrou zero alertas classificados como vulnerabilidades e dois avisos informativos de dependências fora do alvo Windows. As versões das dependências foram mantidas; essa auditoria não foi repetida para 0.6.7. Foram acrescentados recursos do Windows para HTTPS via WinHTTP e abertura do navegador, com quatro comandos próprios tipados e URLs restritas. A interface não recebe um comando genérico para abrir qualquer endereço.
 
@@ -209,18 +221,6 @@ Abra uma **Issue** com:
 - resultado esperado, resultado observado e se restaurar resolveu.
 
 Não envie serial, caminhos pessoais, gravações privadas ou o diário completo. Para falhas de segurança, siga [SECURITY.md](SECURITY.md).
-
-## Perguntas frequentes
-
-**É um software oficial para o FIFINE AM8?** Não. AM8 Lab é um projeto independente e experimental que controla o DSP de uma revisão identificada do AM8 USB.
-
-**Funciona em qualquer AM8?** A revisão inicialmente validada é **B5 0.7.1**, com o fluxo descrito em [Compatibilidade](#compatibilidade). Outras revisões são recusadas. A aplicação não atualiza nem grava a firmware.
-
-**Posso usar só XLR?** Os comandos precisam da conexão USB. A avaliação audível documentada cobre USB e o áudio dos fones; o caminho XLR não foi validado.
-
-**O EQ dos fones muda o áudio dos jogos e do Discord?** Sim, quando esse áudio sai pelo dispositivo de reprodução do AM8 e é ouvido no P2 dele. Outra placa de som ou um fone USB não passa por esse EQ.
-
-**Tem RGB ou afinação automática?** Não. Esses recursos estão fora desta versão. Os efeitos experimentais e seus limites estão identificados na interface e nesta documentação.
 
 ## Ajude a melhorar o AM8 Lab
 
