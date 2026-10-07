@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">AM8 Lab — controle do DSP do FIFINE AM8 USB no Windows</title>
+  <desc id="desc">Card de divulgação em grafite e violeta. Redução de ruído, equalização, voz e fones. DSP nativo, open source. Projeto experimental e não oficial, compatibilidade inicial B5 0.7.1. github.com/NightXXT/am8lab.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#171823"/><stop offset="1" stop-color="#090b11"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#c6b4ff"/><stop offset="1" stop-color="#8262e8"/>
+    </linearGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#181b26"/><stop offset=".5" stop-color="#353845"/><stop offset="1" stop-color="#191c27"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop stop-color="#8762df" stop-opacity=".22"/><stop offset="1" stop-color="#8762df" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="mesh" width="10" height="10" patternUnits="userSpaceOnUse">
+      <path d="M0 0h10M0 5h10" stroke="#555365" stroke-opacity=".36" stroke-width="1"/>
+      <path d="M0 0v10M5 0v10" stroke="#070910" stroke-opacity=".55" stroke-width="2"/>
+    </pattern>
+    <clipPath id="meshClip"><rect x="956" y="118" width="146" height="186" rx="65"/></clipPath>
+  </defs>
+  <rect width="1280" height="640" fill="url(#background)"/>
+  <ellipse cx="1033" cy="270" rx="385" ry="365" fill="url(#glow)"/>
+  <path d="M770 0v552M0 552h1280" stroke="#282a37" stroke-width="1"/>
+  <g font-family="Segoe UI,Arial,sans-serif">
+    <rect x="58" y="51" width="45" height="45" rx="13" fill="#9b78f3"/>
+    <path d="M69 75h4l3-9 5 18 5-22 5 13h2" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="119" y="80" fill="#c6badc" font-size="16" font-weight="600" letter-spacing="2.5">DSP NATIVO · OPEN SOURCE</text>
+    <text x="55" y="204" fill="#f6f3fb" font-size="94" font-weight="700" letter-spacing="-3">AM8 Lab</text>
+    <text x="59" y="253" fill="#c2b0f6" font-size="25" font-weight="600">FIFINE AM8 · Windows</text>
+    <text x="59" y="320" fill="#e1dfe9" font-size="35" font-weight="600" letter-spacing="-.7">Seu AM8, com mais controle.</text>
+    <text x="60" y="357" fill="#9c9fad" font-size="20">Ajustes no próprio microfone, por USB.</text>
+    <g fill="#c6c4d5" font-size="17" font-weight="500">
+      <rect x="59" y="409" width="150" height="46" rx="12" fill="#20212d" stroke="#363342"/>
+      <text x="134" y="438" text-anchor="middle">Ruído</text>
+      <rect x="221" y="409" width="173" height="46" rx="12" fill="#20212d" stroke="#363342"/>
+      <text x="307.5" y="438" text-anchor="middle">Equalização</text>
+      <rect x="406" y="409" width="100" height="46" rx="12" fill="#20212d" stroke="#363342"/>
+      <text x="456" y="438" text-anchor="middle">Voz</text>
+      <rect x="518" y="409" width="109" height="46" rx="12" fill="#20212d" stroke="#363342"/>
+      <text x="572.5" y="438" text-anchor="middle">Fones</text>
+    </g>
+    <text x="60" y="500" fill="#828493" font-size="16">Comparar · Restaurar · Perfis locais</text>
+    <text x="61" y="602" fill="#9797a8" font-size="16">Experimental · B5 0.7.1 · Não oficial</text>
+    <text x="1220" y="602" text-anchor="end" fill="#c4b6e9" font-size="19" font-weight="500">github.com/NightXXT/am8lab</text>
+  </g>
+  <g>
+    <circle cx="1026" cy="266" r="172" fill="none" stroke="#77608f" stroke-opacity=".17"/>
+    <circle cx="1026" cy="266" r="214" fill="none" stroke="#77608f" stroke-opacity=".09"/>
+    <path d="M891 321v35c0 75 53 108 135 108s135-33 135-108v-35" fill="none" stroke="#252836" stroke-width="11" stroke-linecap="round"/>
+    <path d="M891 321v35c0 75 53 108 135 108s135-33 135-108v-35" fill="none" stroke="#4e485c" stroke-width="2" stroke-linecap="round"/>
+    <path d="M1026 466v27" stroke="#3c3b4c" stroke-width="12"/>
+    <path d="M982 498h88" stroke="#525064" stroke-width="7" stroke-linecap="round"/>
+    <rect x="950" y="112" width="158" height="303" rx="73" fill="url(#body)" stroke="#4c485b" stroke-width="2"/>
+    <rect x="955" y="117" width="148" height="193" rx="66" fill="#141620"/>
+    <g clip-path="url(#meshClip)"><rect x="954" y="116" width="151" height="193" fill="url(#mesh)"/></g>
+    <path d="M968 291c39 17 81 17 120 0" fill="none" stroke="#c1a0ff" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="1029" cy="353" r="24" fill="#151721" stroke="#55505f" stroke-width="2"/>
+    <circle cx="1029" cy="353" r="16" fill="#2c2d39"/>
+    <path d="M1029 342v8" stroke="#bba0ed" stroke-width="2" stroke-linecap="round"/>
+    <path d="M981 127c-12 29-16 82-13 127" fill="none" stroke="#d9d1ef" stroke-opacity=".12" stroke-width="3" stroke-linecap="round"/>
+    <rect x="812" y="355" width="171" height="114" rx="17" fill="#1a1b27" stroke="#3a334a"/>
+    <g font-family="Segoe UI,Arial,sans-serif">
+      <text x="830" y="384" fill="#9f96ba" font-size="12" font-weight="600" letter-spacing="1.5">VOZ · EQ</text>
+      <text x="830" y="445" fill="#817d91" font-size="10">ILUSTRAÇÃO</text>
+    </g>
+    <path d="M830 419h134" stroke="#393341" stroke-width="1"/>
+    <path d="M830 420c18-1 20-18 39-17s27 21 48 18 28-11 47-9" fill="none" stroke="url(#accent)" stroke-width="2.5" stroke-linecap="round"/>
+    <rect x="1090" y="70" width="123" height="36" rx="18" fill="#251f34" stroke="#4d3e67"/>
+    <text x="1151.5" y="93" text-anchor="middle" fill="#c3acef" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="600">v0.6.7</text>
+  </g>
+</svg>
