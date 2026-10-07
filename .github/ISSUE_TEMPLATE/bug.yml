@@ -1,0 +1,17 @@
+name: Problema ou teste de compatibilidade
+description: Relate comportamento e passos sem compartilhar dados pessoais.
+body:
+  - type: textarea
+    id: environment
+    attributes:
+      label: Ambiente
+      description: Versão do app/Windows, firmware e conexão USB ou XLR. Não inclua serial.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Como reproduzir e onde ouviu o áudio
+      description: Efeitos, saída usada, resultado e se restaurar/desligar o efeito resolveu.
+    validations:
+      required: true
