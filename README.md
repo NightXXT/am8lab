@@ -2,15 +2,15 @@
 
 ![AM8 Lab — Sua voz. O DSP do seu AM8.](docs/assets/banner.svg)
 
-**Controle o processamento nativo do FIFINE AM8 direto pelo Windows.**
+**Ajuste sua voz e o áudio dos fones no DSP do FIFINE AM8.**
 
-[Instalação](#instalação) · [Recursos](#recursos) · [Compatibilidade](#compatibilidade) · [Segurança](SECURITY.md) · [English](README.en.md)
+[Instalação](#instalação) · [Atualizações](#atualizações) · [Recursos](#recursos) · [Compatibilidade](#compatibilidade) · [Segurança](SECURITY.md) · [English](README.en.md)
 
 </div>
 
 ---
 
-O **AM8 Lab** é um aplicativo experimental e não oficial que ajusta os efeitos do DSP do **FIFINE AM8 USB**. A interface prepara os controles; o chip do microfone processa a voz.
+O **AM8 Lab** é um aplicativo experimental e não oficial que ajusta os efeitos do DSP do **FIFINE AM8 USB**. A interface prepara os controles; o chip do microfone processa a voz e equaliza o áudio reproduzido nos fones.
 
 Construído com **Rust + Tauri**, com interface em português, medidores de áudio e comparação com o som original da sessão.
 
@@ -22,22 +22,47 @@ Construído com **Rust + Tauri**, com interface em português, medidores de áud
 | Recurso | O que você pode ajustar |
 | :--- | :--- |
 | 🎙️ **Redução de ruído** | Limiar, intensidade, ataque e liberação para atenuar sons baixos entre as palavras. |
-| 🎚️ **Equalizador** | Dez filtros: pico, graves/agudos shelf, passa-altas e passa-baixas; curva estimada e compensação de ganho. |
+| 🎚️ **EQ do microfone** | Dez filtros para sua voz: pico, graves/agudos shelf, passa-altas e passa-baixas; curva estimada e compensação de ganho. |
+| 🎧 **EQ dos fones** | Equalizador independente para amigos, músicas e jogos reproduzidos pelo AM8; dez filtros, ajustes de −6 a +6 dB e compensação de ganho. |
+| 🔊 **Ganho geral dos fones** | 0 a +18 dB no DSP, com botão para voltar a 0 dB; mantém a compensação dos filtros. |
 | 📊 **Compressor** | Uma faixa, com limiar, razão, ataque e liberação. |
 | 🎵 **Tom da voz** | Algoritmo padrão e Pro; Pro limitado a −3/+3 semitons nesta versão. |
 | 🧬 **Transformação Pro** | Controles independentes de altura e timbre. |
 | 🪩 **Reverb Sala/Plate** | Disponível como experimental; há relato de estalos na reprodução. |
 | 🔉 **Supressão de microfonia** | Experimental; eficácia acústica ainda não medida. |
+| ⬇️ **Atualizações** | Consulta manual das Releases do GitHub, com download do setup no navegador padrão. |
 | 💾 **Perfis locais** | Salve os controles no computador e carregue quando quiser. |
 | ↔️ **Comparar e restaurar** | Alterne entre os efeitos e os valores anteriores à sessão; restaure todos os ajustes afetados. |
 
-**Tom, transformação e reverb funcionam um por vez.** Ruído, EQ e compressor podem ser combinados.
+**Tom, transformação e reverb funcionam um por vez.** Ruído, EQ do microfone e compressor podem ser combinados. O EQ dos fones tem seus próprios controles.
+
+### Novo na versão 0.6.7 · Um estúdio para o DSP do AM8
+
+Interface redesenhada a partir do material do Google Stitch, com superfícies grafite, acentos violeta, tipografia legível e transições discretas. A navegação reúne **Estúdio**, **Voz**, **Fones**, **Perfis** e **Capacidades**. Os controles continuam ligados aos mesmos comandos Rust e ao processamento nativo do microfone.
+
+Na página **Voz**, cada módulo tem seu botão **Aplicar** e estado próprio. **Fones** abre o EQ de reprodução, independente do EQ da voz. A página **Capacidades** distingue resultados confirmados por escuta, comunicação/restauração e recursos experimentais. Os medidores finos continuam mostrando leituras HID relativas; o novo visual não introduz processamento de áudio no computador.
+
+As fontes, ícones e estilos usados pela interface são locais ou do sistema, sem pedidos de fonte/CDN ao abrir o programa. Consulte [o mapeamento do design e seus limites](docs/REDESIGN.md).
+
+### Atualizações manuais
+
+O botão **Atualizações**, na parte inferior do aplicativo, mostra a versão instalada e permite **Verificar atualizações**. A consulta funciona mesmo sem o AM8 conectado. Se houver um setup mais novo, **Baixar instalador** abre o arquivo da Release no navegador padrão. A instalação continua manual: feche o AM8 Lab normalmente para restaurar a sessão antes de executar o setup baixado.
+
+O destino é [NightXXT/am8lab](https://github.com/NightXXT/am8lab/releases). O aplicativo não procura atualizações ao iniciar, não instala nada automaticamente e não envia áudio ou identidade do microfone. Veja [como funciona a consulta](docs/UPDATES.md).
+
+### Equalizador dos fones e ganho geral
+
+No equalizador, escolha **Voz** para ajustar sua voz ou **Fones** para ajustar o áudio recebido do Windows. Para ouvir o EQ dos fones, o áudio precisa sair pelo dispositivo de reprodução do AM8, com os fones ligados ao P2 dele.
+
+O **Ganho geral dos fones** começa em 0 dB e chega a **+18 dB**, limite do descritor nativo deste AM8. O pedido de +20 dB excede essa faixa e é recusado. Prepare o ganho e clique em **Aplicar EQ dos fones**. Ganho positivo pode distorcer; não há limitador automático. Veja [o funcionamento e os testes do ganho](docs/HEADPHONE-GAIN.md).
+
+O teste físico de um passa-baixas de 2.500 Hz produziu menos agudos audíveis nos fones e foi restaurado após 60 segundos. Os demais filtros usam o mesmo bloco nativo, mas todas as combinações ainda não receberam avaliação auditiva. Consulte [o teste e seus limites](docs/HEADPHONE-EQ.md).
 
 ### Uma interface para acompanhar seu áudio
 
 - Barras finas com leituras HID reais de **voz** e **reprodução**.
 - Consulta da saída padrão do Windows, sem mudar o roteamento.
-- Controles em português, tema escuro e transições discretas.
+- Controles em português, módulos por efeito, tema grafite e transições discretas.
 - Detecção automática do AM8 USB compatível.
 
 Os medidores usam uma **escala visual relativa**, sem calibração em dB. A resposta da reprodução foi observada, mas sua sincronização e escala ainda não foram completamente caracterizadas. A curva do EQ é uma estimativa, não uma medição do áudio.
@@ -46,8 +71,8 @@ Os medidores usam uma **escala visual relativa**, sem calibração em dB. A resp
 
 **Requisitos:** Windows 10/11 x64, WebView2 e AM8 USB compatível.
 
-1. Abra a aba **Releases** deste repositório.
-2. Baixe `AM8-Lab-Setup-v0.6.3.exe` e `SHA256SUMS.txt`.
+1. Abra as [Releases de NightXXT/am8lab](https://github.com/NightXXT/am8lab/releases).
+2. Baixe `AM8-Lab-Setup-v0.6.7.exe` e `SHA256SUMS.txt`.
 3. Confira o hash conforme [o guia de instalação](docs/INSTALL.md) e execute o setup.
 4. Conecte o AM8 por **USB** e abra o programa.
 
@@ -56,12 +81,20 @@ O setup instala para o usuário atual, cria atalhos e inclui desinstalador. Se o
 <details>
 <summary><strong>Prefere uma versão portátil?</strong></summary>
 
-Baixe `AM8-Lab-Portable-v0.6.3.zip` nas Releases, confira o hash, extraia a pasta e abra `AM8-Lab.exe`. Mantenha os arquivos de licença que acompanham o programa. WebView2 precisa estar instalado.
+Baixe `AM8-Lab-Portable-v0.6.7.zip` nas Releases, confira o hash, extraia a pasta e abra `AM8-Lab.exe`. Mantenha os arquivos de licença que acompanham o programa. WebView2 precisa estar instalado.
 
 </details>
 
 > [!NOTE]
 > Os executáveis ainda **não têm assinatura digital Authenticode**. O SHA-256 confere integridade em relação à lista da Release; não substitui uma assinatura nem garante confiança no arquivo.
+
+## Atualizações
+
+1. Clique em **Atualizações** no rodapé e depois em **Verificar atualizações**.
+2. Quando houver uma versão mais nova, clique em **Baixar instalador**. O navegador abre o setup validado da Release.
+3. Confira o hash publicado, feche o aplicativo normalmente e execute o novo setup.
+
+A verificação considera até 30 Releases publicadas e usa a versão do arquivo `AM8-Lab-Setup-vX.Y.Z.exe`. Atualizar somente o código do repositório não cria uma atualização instalável. Se o app local for mais novo que o setup publicado, ele informa isso e não oferece uma versão antiga. As pré-releases experimentais também podem aparecer, identificadas no painel.
 
 ## Começando
 
@@ -71,7 +104,7 @@ Abra o aplicativo com o AM8 ligado por USB. Aguarde **“AM8 conectado e verific
 
 ### 2 · Prepare e aplique
 
-Ajuste os controles e pressione **Aplicar** no efeito desejado. Mover um slider ou carregar um perfil prepara os valores; isso não envia todos os ajustes automaticamente.
+Ajuste os controles e pressione **Aplicar** no efeito desejado. Mover um slider ou carregar um perfil prepara os valores; isso não envia todos os ajustes automaticamente. Os perfis novos podem guardar os dois equalizadores; um perfil antigo sem EQ dos fones preserva os controles atuais dos fones.
 
 ### 3 · Ouça e compare
 
@@ -120,14 +153,17 @@ Não edite, apague ou copie esse arquivo para outro microfone quando houver uma 
 - XLR sozinho não transporta os comandos USB.
 - Não há controle de RGB nem detecção física de fones no conector P2.
 - Afinação automática, echo e compressor multibanda estão fora desta versão.
-- Nem todos os valores e combinações receberam avaliação auditiva.
+- Nem todos os valores e combinações receberam avaliação auditiva; no EQ dos fones, a confirmação audível inicial cobriu um passa-baixas de 2.500 Hz.
+- O EQ dos fones não afeta som que sai por outro dispositivo de reprodução do Windows.
 - Ajustes e perfis não são gravados na firmware.
 
 ## Segurança e privacidade
 
-A interface permite somente comandos próprios tipados e escuta de eventos. Os valores são validados no Rust; o app não oferece comandos genéricos de shell, rede ou arquivos pela interface. Ele não grava voz, não faz upload de áudio e não inclui telemetria de rede.
+A interface permite somente comandos próprios tipados e escuta de eventos. Os valores são validados no Rust; o app não oferece comandos genéricos de shell, rede ou arquivos pela interface. Ele não grava voz, não faz upload de áudio e não inclui telemetria de rede. A consulta manual de atualizações acessa a API pública do GitHub por HTTPS e informa a versão do app no User-Agent.
 
-Na revisão inicial, **18 testes Rust passaram**, além dos testes de interface, instalação e desinstalação. A consulta ao RustSec encontrou zero alertas classificados como vulnerabilidades e dois avisos informativos de dependências fora do alvo Windows.
+Nesta versão, **42 testes Rust passaram**, incluindo 11 testes novos para selecionar Releases, versões, limites e URLs de atualização, além de 17 verificações da interface de atualizações com transporte simulado. O resumo do teste do executável, instalador e consulta real está em [verificação da consulta](docs/UPDATES.md#verificação). Os testes históricos de efeitos e ganho continuam documentados em seus relatórios, sem nova avaliação auditiva nesta alteração.
+
+A revisão da versão 0.6.3 encontrou zero alertas classificados como vulnerabilidades e dois avisos informativos de dependências fora do alvo Windows. As versões das dependências foram mantidas; essa auditoria não foi repetida para 0.6.7. Foram acrescentados recursos do Windows para HTTPS via WinHTTP e abertura do navegador, com quatro comandos próprios tipados e URLs restritas. A interface não recebe um comando genérico para abrir qualquer endereço.
 
 Isso **não garante ausência de vulnerabilidades**. Consulte a [revisão e seu escopo](docs/SECURITY-REVIEW.md) e a [política de segurança](SECURITY.md). O instalador pode precisar de internet para instalar WebView2.
 

@@ -1,9 +1,11 @@
-Versão experimental para Windows x64 e AM8 USB B5 0.7.1.
+# AM8 Lab 0.6.7
 
-Inclui setup para usuário atual com verificação WebView2, versão portátil, interface em português, DSP nativo, EQ de dez filtros, ruído, compressor, pitch/transformação e medidores reais.
+Interface redesenhada a partir do material do Google Stitch: estúdio grafite com acentos violeta, navegação Estúdio/Voz/Fones/Perfis/Capacidades e medidores finos. Cada módulo de voz mantém seu Aplicar e estado próprio. Fones abre o EQ de reprodução, independente do EQ da voz.
 
-Segurança: recuperação pendente exige serial válido; arquivos/perfis malformados são limitados e recusados; permissões da UI foram reduzidas; comandos Rust têm ACL explícita e validação; grafo bruto substituído por fingerprint. Revisão e avisos em docs/SECURITY-REVIEW.md.
+A página Capacidades mostra o que foi confirmado por escuta, conferido por comunicação/restauração e o que continua experimental. O design usa recursos locais/do sistema, sem fontes ou ícones carregados de CDN. Medidores continuam relativos e a curva do EQ continua estimada; números fictícios do mockup foram removidos.
 
-Limitações: somente um aparelho/revisão validado; outras revisões recusadas. Reverb pode causar estalos na reprodução — mantenha desligado para uso natural. Supressor de microfonia experimental. Sem RGB, afinação automática ou flash de firmware. Binários sem assinatura Authenticode. Testes automáticos usam hardware falso; as confirmações USB históricas não garantem todo valor/combinação ou toda revisão.
+Backend nativo, limites, diário, comparação/restauração e consulta manual de atualizações mantidos. Esta mudança não acrescenta processamento de áudio no PC, efeitos novos ou validação auditiva. Carregar perfil prepara controles; aplicar envia os ajustes.
 
-Validação de entrega: setup final instalado em pasta de teste com WebView2 já presente; somente app, licenças e desinstalador instalados. Smoke do app instalado passou; hash coincide com o portátil. Desinstalação terminou e o diário original permaneceu intacto. O ramo WebView2 ausente não foi executado nesta máquina. Workflow GitHub ainda não executado.
+Compatibilidade AM8 normal USB B5 0.7.1 e fluxo conhecido. Ganho dos fones 0 a +18 dB; positivo pode distorcer e não há limitador automático. Reverb e supressão de microfonia continuam experimentais. Binários sem assinatura Authenticode; confira SHA256SUMS.txt e feche o app normalmente antes de instalar.
+
+O resumo dos testes está em VERIFICACAO.md. Para o botão Atualizações reconhecer esta Release, o setup deve se chamar exatamente AM8-Lab-Setup-v0.6.7.exe.
