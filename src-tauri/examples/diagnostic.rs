@@ -1,4 +1,4 @@
-use am8_lab::{protocol::{Block, Effect, Result, Transport, read_meter}, session::Session, windows::{HidDevice, InstanceMutex}};
+use am8_lab::{protocol::{Block, Effect, Result, Transport, read_meter, read_block}, session::Session, windows::{HidDevice, InstanceMutex}};
 use std::{collections::BTreeMap, path::PathBuf};
 
 fn main() {
@@ -9,6 +9,42 @@ fn run() -> Result<()> {
     let path = PathBuf::from(std::env::var_os("LOCALAPPDATA").ok_or("LOCALAPPDATA ausente")?).join("AM8Lab/efeitos-recuperacao.json");
     let mut s = Session::open(path)?;
     let mut t = HidDevice::open()?;
+    if std::env::args().any(|a| a == "--control-timing") {
+        t.set_query_interval(80)?;
+        let blocks = [Block::Noise, Block::Pitch, Block::Eq, Block::PlaybackEq, Block::Compressor,
+            Block::PitchPro, Block::VoicePro, Block::ReverbNative, Block::PlateNative, Block::FeedbackFine,
+            Block::WetRoute, Block::MainRoute, Block::VoiceRoute, Block::EchoEq, Block::Autotune,
+            Block::Voice, Block::AutoRoute, Block::MicGain];
+        t.guard()?;
+        let mut reference = BTreeMap::new();
+        for block in blocks { reference.insert(block, read_block(&mut t, block)?); }
+        let mut runs = Vec::new();
+        for interval_ms in [80, 16, 8] {
+            t.set_query_interval(interval_ms)?;
+            let guard_start = std::time::Instant::now();
+            t.guard()?;
+            let guard_ms = guard_start.elapsed().as_secs_f64() * 1000.0;
+            let mut samples = Vec::new();
+            for round in 0..3 {
+                let order: Vec<_> = if round % 2 == 0 { blocks.to_vec() } else { blocks.iter().rev().copied().collect() };
+                for block in order {
+                    let start = std::time::Instant::now();
+                    let words = read_block(&mut t, block)?;
+                    if words != reference[&block] { return Err(format!("O bloco {block:?} mudou durante o diagnóstico de leitura")); }
+                    samples.push(serde_json::json!({"block":block,"ms":start.elapsed().as_secs_f64()*1000.0}));
+                }
+            }
+            runs.push(serde_json::json!({"interval_ms":interval_ms,"guard_ms":guard_ms,"samples":samples}));
+        }
+        let report = serde_json::json!({"test":"read_only_control_timing","blocks":blocks.len(),"runs":runs,"all_matched":true,"writes":0});
+        let arguments: Vec<_> = std::env::args().collect();
+        if let Some(index) = arguments.iter().position(|a| a == "--report") {
+            let path = arguments.get(index + 1).ok_or("Caminho do relatório ausente")?;
+            std::fs::write(path, serde_json::to_vec_pretty(&report).unwrap()).map_err(|e| e.to_string())?;
+        }
+        println!("{}", report);
+        return Ok(());
+    }
     if std::env::args().any(|a| a == "--meter-timing") {
         t.guard()?;
         let mut runs = Vec::new();
