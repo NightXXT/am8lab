@@ -1,0 +1,674 @@
+{
+  "all_matched": true,
+  "blocks": 18,
+  "runs": [
+    {
+      "guard_ms": 1406.0361,
+      "interval_ms": 80,
+      "samples": [
+        {
+          "block": "noise",
+          "ms": 86.9443
+        },
+        {
+          "block": "pitch",
+          "ms": 86.9742
+        },
+        {
+          "block": "eq",
+          "ms": 84.9976
+        },
+        {
+          "block": "playback_eq",
+          "ms": 89.0046
+        },
+        {
+          "block": "compressor",
+          "ms": 85.0131
+        },
+        {
+          "block": "pitch_pro",
+          "ms": 87.9621
+        },
+        {
+          "block": "voice_pro",
+          "ms": 86.9955
+        },
+        {
+          "block": "reverb_native",
+          "ms": 87.9928
+        },
+        {
+          "block": "plate_native",
+          "ms": 86.0127
+        },
+        {
+          "block": "feedback_fine",
+          "ms": 86.9685
+        },
+        {
+          "block": "wet_route",
+          "ms": 86.0048
+        },
+        {
+          "block": "main_route",
+          "ms": 84.9904
+        },
+        {
+          "block": "voice_route",
+          "ms": 86.9898
+        },
+        {
+          "block": "echo_eq",
+          "ms": 86.0238
+        },
+        {
+          "block": "autotune",
+          "ms": 86.97789999999999
+        },
+        {
+          "block": "voice",
+          "ms": 84.9931
+        },
+        {
+          "block": "auto_route",
+          "ms": 86.9896
+        },
+        {
+          "block": "mic_gain",
+          "ms": 87.0106
+        },
+        {
+          "block": "mic_gain",
+          "ms": 86.9759
+        },
+        {
+          "block": "auto_route",
+          "ms": 86.9914
+        },
+        {
+          "block": "voice",
+          "ms": 85.9984
+        },
+        {
+          "block": "autotune",
+          "ms": 84.995
+        },
+        {
+          "block": "echo_eq",
+          "ms": 86.00399999999999
+        },
+        {
+          "block": "voice_route",
+          "ms": 86.9867
+        },
+        {
+          "block": "main_route",
+          "ms": 86.998
+        },
+        {
+          "block": "wet_route",
+          "ms": 86.9948
+        },
+        {
+          "block": "feedback_fine",
+          "ms": 86.9939
+        },
+        {
+          "block": "plate_native",
+          "ms": 87.00869999999999
+        },
+        {
+          "block": "reverb_native",
+          "ms": 85.98939999999999
+        },
+        {
+          "block": "voice_pro",
+          "ms": 86.0091
+        },
+        {
+          "block": "pitch_pro",
+          "ms": 84.9849
+        },
+        {
+          "block": "compressor",
+          "ms": 85.9896
+        },
+        {
+          "block": "playback_eq",
+          "ms": 85.00340000000001
+        },
+        {
+          "block": "eq",
+          "ms": 84.98360000000001
+        },
+        {
+          "block": "pitch",
+          "ms": 85.9946
+        },
+        {
+          "block": "noise",
+          "ms": 84.9982
+        },
+        {
+          "block": "noise",
+          "ms": 86.0004
+        },
+        {
+          "block": "pitch",
+          "ms": 84.98859999999999
+        },
+        {
+          "block": "eq",
+          "ms": 85.0025
+        },
+        {
+          "block": "playback_eq",
+          "ms": 86.00789999999999
+        },
+        {
+          "block": "compressor",
+          "ms": 87.9797
+        },
+        {
+          "block": "pitch_pro",
+          "ms": 85.9941
+        },
+        {
+          "block": "voice_pro",
+          "ms": 84.9991
+        },
+        {
+          "block": "reverb_native",
+          "ms": 84.9938
+        },
+        {
+          "block": "plate_native",
+          "ms": 87.99759999999999
+        },
+        {
+          "block": "feedback_fine",
+          "ms": 86.0009
+        },
+        {
+          "block": "wet_route",
+          "ms": 86.98599999999999
+        },
+        {
+          "block": "main_route",
+          "ms": 86.9946
+        },
+        {
+          "block": "voice_route",
+          "ms": 85.9948
+        },
+        {
+          "block": "echo_eq",
+          "ms": 84.99950000000001
+        },
+        {
+          "block": "autotune",
+          "ms": 86.9923
+        },
+        {
+          "block": "voice",
+          "ms": 86.00489999999999
+        },
+        {
+          "block": "auto_route",
+          "ms": 85.9887
+        },
+        {
+          "block": "mic_gain",
+          "ms": 86.9947
+        }
+      ]
+    },
+    {
+      "guard_ms": 353.9524,
+      "interval_ms": 16,
+      "samples": [
+        {
+          "block": "noise",
+          "ms": 22.9098
+        },
+        {
+          "block": "pitch",
+          "ms": 23.9982
+        },
+        {
+          "block": "eq",
+          "ms": 22.989900000000002
+        },
+        {
+          "block": "playback_eq",
+          "ms": 23.002499999999998
+        },
+        {
+          "block": "compressor",
+          "ms": 22.9908
+        },
+        {
+          "block": "pitch_pro",
+          "ms": 23.9893
+        },
+        {
+          "block": "voice_pro",
+          "ms": 23.011899999999997
+        },
+        {
+          "block": "reverb_native",
+          "ms": 21.987199999999998
+        },
+        {
+          "block": "plate_native",
+          "ms": 22.0005
+        },
+        {
+          "block": "feedback_fine",
+          "ms": 20.9891
+        },
+        {
+          "block": "wet_route",
+          "ms": 21.99
+        },
+        {
+          "block": "main_route",
+          "ms": 23.0013
+        },
+        {
+          "block": "voice_route",
+          "ms": 23.0103
+        },
+        {
+          "block": "echo_eq",
+          "ms": 21.9799
+        },
+        {
+          "block": "autotune",
+          "ms": 23.0016
+        },
+        {
+          "block": "voice",
+          "ms": 24.993100000000002
+        },
+        {
+          "block": "auto_route",
+          "ms": 23.002499999999998
+        },
+        {
+          "block": "mic_gain",
+          "ms": 21.9734
+        },
+        {
+          "block": "mic_gain",
+          "ms": 21.0011
+        },
+        {
+          "block": "auto_route",
+          "ms": 21.9882
+        },
+        {
+          "block": "voice",
+          "ms": 20.9979
+        },
+        {
+          "block": "autotune",
+          "ms": 22.009999999999998
+        },
+        {
+          "block": "echo_eq",
+          "ms": 21.9886
+        },
+        {
+          "block": "voice_route",
+          "ms": 21.9926
+        },
+        {
+          "block": "main_route",
+          "ms": 21.9999
+        },
+        {
+          "block": "wet_route",
+          "ms": 23.994999999999997
+        },
+        {
+          "block": "feedback_fine",
+          "ms": 21.993100000000002
+        },
+        {
+          "block": "plate_native",
+          "ms": 22.9957
+        },
+        {
+          "block": "reverb_native",
+          "ms": 21.994400000000002
+        },
+        {
+          "block": "voice_pro",
+          "ms": 24.0028
+        },
+        {
+          "block": "pitch_pro",
+          "ms": 22.990099999999998
+        },
+        {
+          "block": "compressor",
+          "ms": 21.006
+        },
+        {
+          "block": "playback_eq",
+          "ms": 21.988400000000002
+        },
+        {
+          "block": "eq",
+          "ms": 20.9978
+        },
+        {
+          "block": "pitch",
+          "ms": 23.986
+        },
+        {
+          "block": "noise",
+          "ms": 23.999699999999997
+        },
+        {
+          "block": "noise",
+          "ms": 23.9938
+        },
+        {
+          "block": "pitch",
+          "ms": 23.0092
+        },
+        {
+          "block": "eq",
+          "ms": 21.9971
+        },
+        {
+          "block": "playback_eq",
+          "ms": 23.9926
+        },
+        {
+          "block": "compressor",
+          "ms": 22.9912
+        },
+        {
+          "block": "pitch_pro",
+          "ms": 21.9902
+        },
+        {
+          "block": "voice_pro",
+          "ms": 24.0016
+        },
+        {
+          "block": "reverb_native",
+          "ms": 23.982
+        },
+        {
+          "block": "plate_native",
+          "ms": 23.0131
+        },
+        {
+          "block": "feedback_fine",
+          "ms": 22.982200000000002
+        },
+        {
+          "block": "wet_route",
+          "ms": 23.0048
+        },
+        {
+          "block": "main_route",
+          "ms": 22.985
+        },
+        {
+          "block": "voice_route",
+          "ms": 24.0003
+        },
+        {
+          "block": "echo_eq",
+          "ms": 23.0004
+        },
+        {
+          "block": "autotune",
+          "ms": 23.9876
+        },
+        {
+          "block": "voice",
+          "ms": 21.0022
+        },
+        {
+          "block": "auto_route",
+          "ms": 20.9852
+        },
+        {
+          "block": "mic_gain",
+          "ms": 21.0038
+        }
+      ]
+    },
+    {
+      "guard_ms": 259.97090000000003,
+      "interval_ms": 8,
+      "samples": [
+        {
+          "block": "noise",
+          "ms": 13.9074
+        },
+        {
+          "block": "pitch",
+          "ms": 14.9916
+        },
+        {
+          "block": "eq",
+          "ms": 13.005700000000001
+        },
+        {
+          "block": "playback_eq",
+          "ms": 15.9919
+        },
+        {
+          "block": "compressor",
+          "ms": 12.9813
+        },
+        {
+          "block": "pitch_pro",
+          "ms": 15.0074
+        },
+        {
+          "block": "voice_pro",
+          "ms": 13.9969
+        },
+        {
+          "block": "reverb_native",
+          "ms": 16.0046
+        },
+        {
+          "block": "plate_native",
+          "ms": 12.989
+        },
+        {
+          "block": "feedback_fine",
+          "ms": 16.990000000000002
+        },
+        {
+          "block": "wet_route",
+          "ms": 17.0008
+        },
+        {
+          "block": "main_route",
+          "ms": 16.9868
+        },
+        {
+          "block": "voice_route",
+          "ms": 13.989899999999999
+        },
+        {
+          "block": "echo_eq",
+          "ms": 16.02
+        },
+        {
+          "block": "autotune",
+          "ms": 17.982100000000003
+        },
+        {
+          "block": "voice",
+          "ms": 16.0021
+        },
+        {
+          "block": "auto_route",
+          "ms": 17.0025
+        },
+        {
+          "block": "mic_gain",
+          "ms": 18.9835
+        },
+        {
+          "block": "mic_gain",
+          "ms": 16.9957
+        },
+        {
+          "block": "auto_route",
+          "ms": 16.990399999999998
+        },
+        {
+          "block": "voice",
+          "ms": 18.0177
+        },
+        {
+          "block": "autotune",
+          "ms": 17.9743
+        },
+        {
+          "block": "echo_eq",
+          "ms": 17.0101
+        },
+        {
+          "block": "voice_route",
+          "ms": 16.9908
+        },
+        {
+          "block": "main_route",
+          "ms": 17.9895
+        },
+        {
+          "block": "wet_route",
+          "ms": 17.002799999999997
+        },
+        {
+          "block": "feedback_fine",
+          "ms": 17.0044
+        },
+        {
+          "block": "plate_native",
+          "ms": 17.9828
+        },
+        {
+          "block": "reverb_native",
+          "ms": 17.0003
+        },
+        {
+          "block": "voice_pro",
+          "ms": 16.9935
+        },
+        {
+          "block": "pitch_pro",
+          "ms": 18.0061
+        },
+        {
+          "block": "compressor",
+          "ms": 18.0025
+        },
+        {
+          "block": "playback_eq",
+          "ms": 16.9907
+        },
+        {
+          "block": "eq",
+          "ms": 16.9995
+        },
+        {
+          "block": "pitch",
+          "ms": 18.006
+        },
+        {
+          "block": "noise",
+          "ms": 16.9762
+        },
+        {
+          "block": "noise",
+          "ms": 16.991
+        },
+        {
+          "block": "pitch",
+          "ms": 17.9998
+        },
+        {
+          "block": "eq",
+          "ms": 17.994699999999998
+        },
+        {
+          "block": "playback_eq",
+          "ms": 16.9895
+        },
+        {
+          "block": "compressor",
+          "ms": 17.0049
+        },
+        {
+          "block": "pitch_pro",
+          "ms": 17.9881
+        },
+        {
+          "block": "voice_pro",
+          "ms": 17.0073
+        },
+        {
+          "block": "reverb_native",
+          "ms": 16.983700000000002
+        },
+        {
+          "block": "plate_native",
+          "ms": 18.0281
+        },
+        {
+          "block": "feedback_fine",
+          "ms": 17.9617
+        },
+        {
+          "block": "wet_route",
+          "ms": 17.0026
+        },
+        {
+          "block": "main_route",
+          "ms": 16.9945
+        },
+        {
+          "block": "voice_route",
+          "ms": 18.003
+        },
+        {
+          "block": "echo_eq",
+          "ms": 16.9985
+        },
+        {
+          "block": "autotune",
+          "ms": 17.9873
+        },
+        {
+          "block": "voice",
+          "ms": 17.986800000000002
+        },
+        {
+          "block": "auto_route",
+          "ms": 16.0125
+        },
+        {
+          "block": "mic_gain",
+          "ms": 17.980900000000002
+        }
+      ]
+    }
+  ],
+  "test": "read_only_control_timing",
+  "writes": 0
+}

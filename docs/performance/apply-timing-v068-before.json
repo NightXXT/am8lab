@@ -1,0 +1,31 @@
+{
+  "baseline_matched": true,
+  "cleanup_error": null,
+  "error": null,
+  "recovery_pending": false,
+  "tests": [
+    {
+      "apply_ms": 5216.9295,
+      "confirmed_after_400_ms": true,
+      "effect": "noise",
+      "explicit_wait_ms": 250,
+      "guard_ms": 1392.0205,
+      "queries_without_guard": 36,
+      "restore_ms": 4369.0256,
+      "restored": true,
+      "writes": 3
+    },
+    {
+      "apply_ms": 5815.9229000000005,
+      "confirmed_after_400_ms": true,
+      "effect": "pitch",
+      "explicit_wait_ms": 250,
+      "guard_ms": 1381.9661,
+      "queries_without_guard": 45,
+      "restore_ms": 4577.9998,
+      "restored": true,
+      "writes": 2
+    }
+  ],
+  "version": "0.6.8"
+}

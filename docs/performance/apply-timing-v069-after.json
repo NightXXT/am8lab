@@ -1,0 +1,108 @@
+{
+  "baseline_matched": true,
+  "cleanup_error": null,
+  "error": null,
+  "recovery_pending": false,
+  "tests": [
+    {
+      "apply_ms": 1324.9584,
+      "confirmed_after_400_ms": true,
+      "effect": "noise",
+      "explicit_wait_ms": 250,
+      "guard_ms": 237.0196,
+      "queries_without_guard": 32,
+      "restore_ms": 1405.0114,
+      "restored": true,
+      "writes": 3
+    },
+    {
+      "apply_ms": 1329.8968,
+      "confirmed_after_400_ms": true,
+      "effect": "pitch",
+      "explicit_wait_ms": 250,
+      "guard_ms": 237.97899999999998,
+      "queries_without_guard": 35,
+      "restore_ms": 1463.9759,
+      "restored": true,
+      "writes": 2
+    },
+    {
+      "apply_ms": 2291.9301,
+      "confirmed_after_400_ms": true,
+      "effect": "eq",
+      "explicit_wait_ms": 250,
+      "guard_ms": 284.0166,
+      "queries_without_guard": 32,
+      "restore_ms": 2267.9804,
+      "restored": true,
+      "writes": 10
+    },
+    {
+      "apply_ms": 2174.9439,
+      "confirmed_after_400_ms": true,
+      "effect": "playbackeq",
+      "explicit_wait_ms": 250,
+      "guard_ms": 236.0377,
+      "queries_without_guard": 32,
+      "restore_ms": 2280.0053,
+      "restored": true,
+      "writes": 10
+    },
+    {
+      "apply_ms": 1707.8798,
+      "confirmed_after_400_ms": true,
+      "effect": "compressor",
+      "explicit_wait_ms": 250,
+      "guard_ms": 273.9631,
+      "queries_without_guard": 32,
+      "restore_ms": 2287.0018,
+      "restored": true,
+      "writes": 5
+    },
+    {
+      "apply_ms": 2204.9642,
+      "confirmed_after_400_ms": true,
+      "effect": "pitchpro",
+      "explicit_wait_ms": 250,
+      "guard_ms": 289.0817,
+      "queries_without_guard": 35,
+      "restore_ms": 2267.007,
+      "restored": true,
+      "writes": 2
+    },
+    {
+      "apply_ms": 4426.009,
+      "confirmed_after_400_ms": true,
+      "effect": "voicepro",
+      "explicit_wait_ms": 1500,
+      "guard_ms": 231.0508,
+      "queries_without_guard": 45,
+      "restore_ms": 6425.9952,
+      "restored": true,
+      "writes": 6
+    },
+    {
+      "apply_ms": 2760.9584,
+      "confirmed_after_400_ms": true,
+      "effect": "reverb",
+      "explicit_wait_ms": 750,
+      "guard_ms": 228.02800000000002,
+      "queries_without_guard": 42,
+      "restore_ms": 3440.0203,
+      "restored": true,
+      "writes": 9
+    },
+    {
+      "apply_ms": 3828.9590000000003,
+      "confirmed_after_400_ms": true,
+      "effect": "plate",
+      "explicit_wait_ms": 1500,
+      "guard_ms": 275.0254,
+      "queries_without_guard": 42,
+      "restore_ms": 4211.9893,
+      "restored": true,
+      "writes": 9
+    }
+  ],
+  "version": "0.6.9"
+}
