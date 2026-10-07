@@ -1,0 +1,17 @@
+# AM8 Lab
+
+[Português](README.md)
+
+Experimental, unofficial Windows USB controller for the FIFINE AM8's native DSP. Built with Rust + Tauri; the UI is in Portuguese. No PC voice processing, virtual microphone or firmware flashing.
+
+Download `AM8-Lab-Setup-v0.6.3.exe` and `SHA256SUMS.txt` from this repository's Releases. Check the hash, install, connect the microphone and apply controls. Setup installs for the current user and checks WebView2; if missing, Microsoft's embedded bootstrapper needs internet to install the runtime. Binaries are not Authenticode-signed; a hash is not a trust guarantee.
+
+Validated on Windows x64, USB 3142:A010 / MI_04, B5 0.7.1 / library2.43.2 / engine2.23.2 / HunXiang and one known graph fingerprint. Other revisions are refused. Hardware testing covered one physical unit; broad compatibility is not established.
+
+Noise, ten-filter EQ, single-band compressor, standard/Pro pitch and Pro voice transformation are available. Pitch, transformation and reverberation are mutually exclusive. **Room/plate reverb is experimental: playback crackles were reported and stopped when disabled.** Feedback suppression is also experimental. RGB, autotune, echo and multiband compressor are excluded.
+
+Meters use real HID values, with a relative visual scale rather than calibrated dB. Playback response has not been fully characterized. Settings are temporary: comparison restores the pre-session reference and normal app exit restores all affected parameters/routes. Reconnect and restore if communication fails. A serial-bound local recovery journal is saved before hardware writes; pending unbound journals are preserved and refused.
+
+Profiles are local and load controls without automatically applying them. See [build instructions](docs/BUILD.md), [security policy](SECURITY.md), [review](docs/SECURITY-REVIEW.md) and [data provenance](docs/PROVENANCE.md). Do not share personal serials or recovery files in Issues.
+
+MIT for original code; third-party notices apply. Not affiliated with FIFINE.
