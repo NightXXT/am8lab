@@ -1,5 +1,5 @@
 use crate::protocol::{self, Block, Result, Transport};
-use std::{ffi::c_void, path::Path, ptr, thread, time::Duration};
+use std::{ffi::c_void, path::Path, ptr, thread, time::{Duration, Instant}};
 use sha2::{Digest, Sha256};
 
 type Handle = *mut c_void;
@@ -66,7 +66,7 @@ impl InstanceMutex {
 }
 impl Drop for InstanceMutex { fn drop(&mut self) { for h in &self.0 { unsafe { CloseHandle(*h); } } } }
 
-pub struct HidDevice { handle: Handle, serial: String }
+pub struct HidDevice { handle: Handle, serial: String, query_interval_ms: u64 }
 impl HidDevice {
     pub fn open() -> Result<Self> {
         let mut count = 0;
@@ -83,7 +83,7 @@ impl HidDevice {
         let path = wide(&candidates[0]);
         let handle = unsafe { CreateFileW(path.as_ptr(), 0xC0000000, 3, ptr::null(), 3, 0, ptr::null_mut()) };
         if handle as isize == -1 { return Err(win_error("Não foi possível abrir o AM8")); }
-        let mut device = Self { handle, serial: String::new() };
+        let mut device = Self { handle, serial: String::new(), query_interval_ms: 8 };
         let mut data = ptr::null_mut();
         if unsafe { HidD_GetPreparsedData(handle, &mut data) } == 0 { return Err(win_error("Não foi possível verificar o HID")); }
         let mut caps = [0u16; 32];
@@ -109,7 +109,15 @@ impl HidDevice {
     }
 
     fn exchange(&mut self, op: u8, request: &[u8], sequence: Option<u8>) -> Result<Vec<u8>> {
-        self.exchange_with_wait(op, request, sequence, 80)
+        self.exchange_with_wait(op, request, sequence, self.query_interval_ms)
+    }
+
+    /// Select the polling interval for control responses; the response budget stays 800 ms.
+    /// This changes read polling only, never the pacing between parameter writes.
+    pub fn set_query_interval(&mut self, interval_ms: u64) -> Result<()> {
+        if !(8..=80).contains(&interval_ms) { return Err("Intervalo de consulta permitido: 8 a 80 ms".into()); }
+        self.query_interval_ms = interval_ms;
+        Ok(())
     }
 
     pub fn meter_with_wait(&mut self, op: u8, wait_ms: u64) -> Result<u16> {
@@ -124,21 +132,32 @@ impl HidDevice {
     fn exchange_with_wait(&mut self, op: u8, request: &[u8], sequence: Option<u8>, wait_ms: u64) -> Result<Vec<u8>> {
         if op == 0x80 && sequence.is_none() && request.is_empty() { return Err("Consulta de modo sem seletor".into()); }
         self.send(op, request)?;
+        let response_budget = Duration::from_millis(800);
+        let started = Instant::now();
         for _ in 0..(800 / wait_ms) {
+            if started.elapsed() >= response_budget { break; }
             thread::sleep(Duration::from_millis(wait_ms));
+            if started.elapsed() >= response_budget { break; }
             let mut raw = [0u8; 257];
             if unsafe { HidD_GetInputReport(self.handle, raw.as_mut_ptr().cast(), 257) } == 0 { return Err(win_error("Leitura HID falhou")); }
+            if started.elapsed() >= response_budget { break; }
             if let Ok(p) = protocol::decode(&raw, op) {
-                if let Some(seq) = sequence {
-                    if p.first() != Some(&seq) { continue; }
-                } else if op == 0x80 {
-                    if p.len() < 5 || p[..3] != [0, 255, 0] || p[3] != request[0] || p.last() != Some(&1) { continue; }
-                }
+                if !matches_reply(op, request, sequence, p) { continue; }
                 return Ok(p.to_vec());
             }
         }
         Err("O AM8 não confirmou a resposta esperada".into())
     }
+}
+
+fn matches_reply(op: u8, request: &[u8], sequence: Option<u8>, payload: &[u8]) -> bool {
+    if let Some(seq) = sequence {
+        if payload.first() != Some(&seq) || payload.len() < 2 || !matches!(payload.last(), Some(0 | 1)) { return false; }
+        // Mode and flow share opcode 0x80 and both can start with zero. A slow
+        // mode reply must not be consumed as the first packet of the flow.
+        return seq != 0 || (payload.len() >= 7 && payload[1..3] == [255, 0] && payload.get(3) == request.first());
+    }
+    op != 0x80 || (payload.len() >= 5 && payload[..3] == [0, 255, 0] && payload.get(3) == request.first() && payload.last() == Some(&1))
 }
 
 impl Transport for HidDevice {
@@ -186,3 +205,22 @@ impl Transport for HidDevice {
 }
 
 impl Drop for HidDevice { fn drop(&mut self) { unsafe { CloseHandle(self.handle); } } }
+
+#[cfg(test)]
+mod tests {
+    use super::matches_reply;
+    #[test]
+    fn flow_polling_rejects_previous_mode_response() {
+        let mode = [0, 255, 0, 6, 0, 0, 1];
+        assert!(matches_reply(0x80, &[6], None, &mode));
+        assert!(!matches_reply(0x80, &[2], Some(0), &mode));
+        assert!(!matches_reply(0x80, &[2], Some(0), &[0, 255, 0, 2]));
+        assert!(matches_reply(0x80, &[2], Some(0), &[0, 255, 0, 2, 115, 11, 0]));
+    }
+    #[test]
+    fn flow_polling_requires_sequence_and_valid_marker() {
+        assert!(!matches_reply(0x80, &[2], Some(2), &[1, 42, 0]));
+        assert!(!matches_reply(0x80, &[2], Some(2), &[2, 42, 2]));
+        assert!(matches_reply(0x80, &[2], Some(2), &[2, 42, 1]));
+    }
+}

@@ -15,6 +15,14 @@ fn validate_serial(serial: &str) -> Result<()> {
 }
 
 type Blocks = BTreeMap<Block, Vec<i16>>;
+// Preparation reads belong to one guarded operation only. Never retain these
+// values across commands: another tool or the device can change its state.
+fn prepared_block(t: &mut impl Transport, blocks: &mut Blocks, block: Block) -> Result<Vec<i16>> {
+    if let Some(words) = blocks.get(&block) { return Ok(words.clone()); }
+    let words = read_block(t, block)?;
+    blocks.insert(block, words.clone());
+    Ok(words)
+}
 #[derive(Clone, Deserialize, Serialize)]
 struct Journal {
     version: u32,
@@ -101,30 +109,31 @@ impl Session {
             Block::ReverbNative, Block::PlateNative, Block::FeedbackFine, Block::WetRoute, Block::MainRoute, Block::VoiceRoute,
             Block::EchoEq, Block::Autotune, Block::Voice, Block::AutoRoute] { effects.insert(block, read_block(t, block)?); }
         let gain = read_block(t, Block::MicGain)?;
-        let legacy_active = read_block(t, Block::Autotune)?[0] != 0 || read_block(t, Block::Voice)?[0] != 0 || read_block(t, Block::AutoRoute)?[1] != 1;
+        let legacy_active = effects[&Block::Autotune][0] != 0 || effects[&Block::Voice][0] != 0 || effects[&Block::AutoRoute][1] != 1;
         Ok(Snapshot { device: "FIFINE AM8 USB • 3142:A010", firmware: "B5 0.7.1", serial: t.serial().into(), effects,
             gain_db: f64::from(gain[2]) / 100.0, recovery_pending: self.pending(), comparison: self.comparison.is_some(),
             legacy_pending: self.legacy_pending() || legacy_active })
     }
 
-    fn ready(&self, t: &mut impl Transport) -> Result<()> {
+    fn ready(&self, t: &mut impl Transport) -> Result<Blocks> {
         self.guard(t)?;
         if self.comparison.is_some() { return Err("Volte aos efeitos antes de aplicar ajustes".into()); }
         if self.legacy_pending() { return Err("Restaure os ajustes da versão antiga antes de continuar".into()); }
-        if read_block(t, Block::Autotune)?[0] != 0 || read_block(t, Block::Voice)?[0] != 0 || read_block(t, Block::AutoRoute)?[1] != 1 {
+        let mut prepared = Blocks::new();
+        if prepared_block(t, &mut prepared, Block::Autotune)?[0] != 0 || prepared_block(t, &mut prepared, Block::Voice)?[0] != 0 || prepared_block(t, &mut prepared, Block::AutoRoute)?[1] != 1 {
             return Err("O caminho de afinação antigo está ativo. Restaure pela versão anterior antes de continuar.".into());
         }
         for block in [Block::PitchPro,Block::VoicePro,Block::ReverbNative,Block::PlateNative,Block::FeedbackFine] {
-            if read_block(t, block)?[0] != 0 && !self.journal.originals.contains_key(&block) {
+            if prepared_block(t, &mut prepared, block)?[0] != 0 && !self.journal.originals.contains_key(&block) {
                 return Err("Um processador externo à sessão está ativo; restaure com a ferramenta que o ativou".into());
             }
         }
         for (block,expected) in [(Block::MainRoute,vec![1,0,600]),(Block::VoiceRoute,vec![1,1,0]),(Block::WetRoute,vec![1,1,0])] {
-            if !self.journal.originals.contains_key(&block) && read_block(t,block)?!=expected {
+            if !self.journal.originals.contains_key(&block) && prepared_block(t, &mut prepared, block)?!=expected {
                 return Err("Um canal de áudio fora da sessão está alterado; operações recusadas".into());
             }
         }
-        Ok(())
+        Ok(prepared)
     }
 
     fn commit(t: &mut impl Transport, targets: &Blocks) -> Result<()> {
@@ -159,9 +168,13 @@ impl Session {
     }
 
     fn transaction(&mut self, t: &mut impl Transport, targets: Blocks) -> Result<()> {
+        self.prepared_transaction(t, targets, Blocks::new())
+    }
+
+    fn prepared_transaction(&mut self, t: &mut impl Transport, targets: Blocks, mut prepared: Blocks) -> Result<()> {
         for (block, target) in &targets { validate_block(*block, target)?; }
         let mut before = Blocks::new();
-        for block in targets.keys() { before.insert(*block, read_block(t, *block)?); }
+        for block in targets.keys() { before.insert(*block, prepared_block(t, &mut prepared, *block)?); }
         for (block, words) in &before { self.journal.originals.entry(*block).or_insert_with(|| words.clone()); }
         self.journal.version = 3;
         self.journal.serial = Some(t.serial().into());
@@ -174,7 +187,7 @@ impl Session {
     }
 
     pub fn apply(&mut self, t: &mut impl Transport, effect: Effect, enabled: bool, values: BTreeMap<String, i32>) -> Result<Snapshot> {
-        self.ready(t)?;
+        let mut prepared = self.ready(t)?;
         if enabled && matches!(effect,Effect::Pitch | Effect::Pitchpro | Effect::Voicepro | Effect::Reverb | Effect::Plate) {
             let allowed_alternatives=match effect {
                 Effect::Pitch=>vec![Block::PitchPro], Effect::Pitchpro=>vec![Block::Pitch],
@@ -182,12 +195,12 @@ impl Session {
                 Effect::Reverb=>vec![Block::PlateNative],Effect::Plate=>vec![Block::ReverbNative],_=>vec![]
             };
             for block in [Block::Pitch,Block::PitchPro,Block::VoicePro,Block::ReverbNative,Block::PlateNative] {
-                if block!=effect.block() && !allowed_alternatives.contains(&block) && read_block(t,block)?[0]!=0 {
+                if block!=effect.block() && !allowed_alternatives.contains(&block) && prepared_block(t, &mut prepared, block)?[0]!=0 {
                     return Err("Use apenas um entre Tom da voz, Transformação Pro e Reverberação. Desative o atual antes de aplicar outro.".into());
                 }
             }
         }
-        let before = read_block(t, effect.block())?;
+        let before = prepared_block(t, &mut prepared, effect.block())?;
         let target = protocol::target(effect, enabled, &values, &before)?;
         let mut targets = Blocks::from([(effect.block(), target)]);
         if effect==Effect::Feedback && enabled {
@@ -195,14 +208,18 @@ impl Session {
             if basic.len()!=5 || basic[..3]!=[255,0,0] { return Err("Outro supressor de microfonia está ativo ou não respondeu".into()); }
         }
         if matches!(effect,Effect::Pitch | Effect::Pitchpro) {
-            if enabled && read_block(t,Block::VoicePro)?[0]!=0 { return Err("Desative a transformação de voz antes de ajustar o tom".into()); }
+            if enabled && prepared_block(t, &mut prepared, Block::VoicePro)?[0]!=0 { return Err("Desative a transformação de voz antes de ajustar o tom".into()); }
             let other = if effect==Effect::Pitch { Block::PitchPro } else { Block::Pitch };
-            let mut words=read_block(t,other)?; words[0]=0; targets.insert(other,words);
+            let mut words=prepared_block(t, &mut prepared, other)?; words[0]=0; targets.insert(other,words);
         }
         if effect==Effect::Voicepro {
-            for block in [Block::Pitch,Block::PitchPro] { let mut words=read_block(t,block)?; words[0]=0; targets.insert(block,words); }
-            let original_main=self.journal.originals.get(&Block::MainRoute).cloned().unwrap_or(read_block(t,Block::MainRoute)?);
-            let original_voice=self.journal.originals.get(&Block::VoiceRoute).cloned().unwrap_or(read_block(t,Block::VoiceRoute)?);
+            for block in [Block::Pitch,Block::PitchPro] { let mut words=prepared_block(t, &mut prepared, block)?; words[0]=0; targets.insert(block,words); }
+            let original_main=match self.journal.originals.get(&Block::MainRoute) {
+                Some(words)=>words.clone(), None=>prepared_block(t, &mut prepared, Block::MainRoute)?
+            };
+            let original_voice=match self.journal.originals.get(&Block::VoiceRoute) {
+                Some(words)=>words.clone(), None=>prepared_block(t, &mut prepared, Block::VoiceRoute)?
+            };
             if original_main[..2] != [1,0] || original_voice[..2] != [1,1] { return Err("Caminho original de voz inesperado".into()); }
             let mut main=original_main.clone(); let mut voice=original_voice;
             if enabled { main[1]=1; voice[1]=0; voice[2]=original_main[2]; }
@@ -210,9 +227,13 @@ impl Session {
         }
         if matches!(effect,Effect::Reverb | Effect::Plate) {
             let other=if effect==Effect::Reverb { Block::PlateNative } else { Block::ReverbNative };
-            let mut words=read_block(t,other)?; words[0]=0; targets.insert(other,words);
-            let original_route=self.journal.originals.get(&Block::WetRoute).cloned().unwrap_or(read_block(t,Block::WetRoute)?);
-            let original_eq=self.journal.originals.get(&Block::EchoEq).cloned().unwrap_or(read_block(t,Block::EchoEq)?);
+            let mut words=prepared_block(t, &mut prepared, other)?; words[0]=0; targets.insert(other,words);
+            let original_route=match self.journal.originals.get(&Block::WetRoute) {
+                Some(words)=>words.clone(), None=>prepared_block(t, &mut prepared, Block::WetRoute)?
+            };
+            let original_eq=match self.journal.originals.get(&Block::EchoEq) {
+                Some(words)=>words.clone(), None=>prepared_block(t, &mut prepared, Block::EchoEq)?
+            };
             if original_route[..2]!=[1,1] { return Err("Mistura original diferente da configuração testada".into()); }
             let mut eq=original_eq.clone();
             let route=if enabled {
@@ -221,7 +242,7 @@ impl Session {
             } else { eq=original_eq; original_route };
             targets.insert(Block::EchoEq,eq); targets.insert(Block::WetRoute,route);
         }
-        self.transaction(t, targets)?;
+        self.prepared_transaction(t, targets, prepared)?;
         self.snapshot(t)
     }
 
@@ -278,14 +299,16 @@ impl Session {
 mod tests {
     use super::*;
     struct Fake { words: Blocks, preset: Vec<i16>, fail: Option<(Block, usize, i16)>, journal: PathBuf, serial: String, lose: bool, writes: usize,
-        written_blocks: Vec<Block> }
+        written_blocks: Vec<Block>, queried_blocks: Vec<Block>, external_on_write: Option<(Block, Vec<i16>)> }
     impl Transport for Fake {
         fn guard(&mut self) -> Result<()> { if self.lose { Err("disconnected".into()) } else { Ok(()) } }
         fn serial(&self) -> &str { &self.serial }
         fn wait(&self, _: u64) {}
         fn query(&mut self, op: u8, _: &[u8]) -> Result<Vec<u8>> {
             if self.lose { return Err("disconnected".into()); }
-            let words = self.words.iter().find(|(block, _)| block.address() == op).unwrap().1;
+            let block = *self.words.keys().find(|block| block.address() == op).unwrap();
+            self.queried_blocks.push(block);
+            let words = &self.words[&block];
             Ok([vec![255], words.iter().flat_map(|v| v.to_le_bytes()).collect()].concat())
         }
         fn write_word(&mut self, block: Block, index: usize, value: i16) -> Result<()> {
@@ -302,6 +325,7 @@ mod tests {
                 if block==Block::VoicePro && index==0 && value==0 { words[1..].copy_from_slice(&[200,130]); }
                 if block == Block::Compressor && index != 0 { self.preset[index] = value; }
             }
+            if let Some((external_block, words)) = self.external_on_write.take() { self.words.insert(external_block, words); }
             Ok(())
         }
     }
@@ -317,10 +341,50 @@ mod tests {
         words.insert(Block::EchoEq,words[&Block::Eq].clone());
         let preset = words[&Block::Compressor].clone();
         let session = Session::open(&path).unwrap();
-        (session, Fake { words, preset, fail: None, journal: path, serial: "TEST-AM8-001".into(), lose: false, writes: 0, written_blocks: vec![] })
+        (session, Fake { words, preset, fail: None, journal: path, serial: "TEST-AM8-001".into(), lose: false, writes: 0, written_blocks: vec![],
+            queried_blocks: vec![], external_on_write: None })
     }
     impl Drop for Fake { fn drop(&mut self) { let _ = fs::remove_file(&self.journal); } }
     fn vals(items: &[(&str, i32)]) -> BTreeMap<String, i32> { items.iter().map(|(k,v)| ((*k).into(), *v)).collect() }
+    #[test] fn snapshot_reads_each_block_once_including_legacy_state() {
+        let (s, mut t) = setup();
+        let snapshot = s.inspect(&mut t).unwrap();
+        assert_eq!(snapshot.effects.len(), 17);
+        assert_eq!(t.queried_blocks.len(), 18, "one read per effect and microphone gain");
+        for block in t.words.keys() {
+            assert_eq!(t.queried_blocks.iter().filter(|read| *read == block).count(), 1, "duplicate read: {block:?}");
+        }
+        t.words.get_mut(&Block::AutoRoute).unwrap()[1] = 0;
+        assert!(s.inspect(&mut t).unwrap().legacy_pending, "a new command must see external changes");
+    }
+    #[test] fn pitch_apply_reduces_queries_without_reusing_previous_command_state() {
+        let (mut s, mut t) = setup();
+        let original = t.words.clone();
+        let snapshot = s.apply(&mut t, Effect::Pitch, true, vals(&[("pitch", -3)])).unwrap();
+        // The previous path used 45 effect reads for this immediate-response
+        // device. Keep full post-write inspection while removing redundant
+        // preparation reads; a simulated 20 ms query costs <=700 ms instead of 900 ms.
+        assert!(t.queried_blocks.len() <= 35, "{} queries", t.queried_blocks.len());
+        assert_eq!(snapshot.effects[&Block::Pitch], t.words[&Block::Pitch]);
+        let writes = t.writes;
+        t.words.get_mut(&Block::VoicePro).unwrap()[0] = 1;
+        assert!(s.apply(&mut t, Effect::Pitch, true, vals(&[("pitch", 1)])).is_err());
+        assert_eq!(t.writes, writes, "externally enabled processor must prevent writes");
+        t.words.get_mut(&Block::VoicePro).unwrap()[0] = 0;
+        s.restore(&mut t).unwrap();
+        assert_eq!(t.words, original);
+    }
+    #[test] fn apply_snapshot_observes_external_changes_to_unaffected_blocks_during_write() {
+        let (mut s, mut t) = setup();
+        let mut playback = t.words[&Block::PlaybackEq].clone();
+        playback[1] = -5 * 256;
+        t.external_on_write = Some((Block::PlaybackEq, playback.clone()));
+        let snapshot = s.apply(&mut t, Effect::Noise, true, vals(&[("threshold", -45)])).unwrap();
+        assert_eq!(snapshot.effects[&Block::PlaybackEq], playback);
+        assert!(!s.journal.originals.contains_key(&Block::PlaybackEq));
+        s.restore(&mut t).unwrap();
+        assert_eq!(t.words[&Block::PlaybackEq], playback, "unaffected external state must survive restore");
+    }
     #[test] fn apply_compare_restart_and_restore() {
         let (mut s, mut t) = setup(); let before = t.words.clone();
         s.apply(&mut t, Effect::Pitch, true, vals(&[("pitch", -3)])).unwrap();
