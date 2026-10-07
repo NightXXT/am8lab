@@ -1,0 +1,1029 @@
+{
+  "eq": {
+    "params": [
+      {
+        "name": "pregain",
+        "min": -24576,
+        "max": 4608,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "fixed-point/floating-point",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter1_enable",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter1_type",
+        "min": 0,
+        "max": 8,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter1_f0",
+        "min": 20,
+        "max": 24000,
+        "default": 200,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter1_Q",
+        "min": 1,
+        "max": 32767,
+        "default": 724,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter1_gain",
+        "min": -9216,
+        "max": 9216,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter2_enable",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter2_type",
+        "min": 0,
+        "max": 8,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter2_f0",
+        "min": 20,
+        "max": 24000,
+        "default": 200,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter2_Q",
+        "min": 1,
+        "max": 32767,
+        "default": 724,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter2_gain",
+        "min": -9216,
+        "max": 9216,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter3_enable",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter3_type",
+        "min": 0,
+        "max": 8,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter3_f0",
+        "min": 20,
+        "max": 24000,
+        "default": 200,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter3_Q",
+        "min": 1,
+        "max": 32767,
+        "default": 724,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter3_gain",
+        "min": -9216,
+        "max": 9216,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter4_enable",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter4_type",
+        "min": 0,
+        "max": 8,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter4_f0",
+        "min": 20,
+        "max": 24000,
+        "default": 200,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter4_Q",
+        "min": 1,
+        "max": 32767,
+        "default": 724,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter4_gain",
+        "min": -9216,
+        "max": 9216,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter5_enable",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter5_type",
+        "min": 0,
+        "max": 8,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter5_f0",
+        "min": 20,
+        "max": 24000,
+        "default": 200,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter5_Q",
+        "min": 1,
+        "max": 32767,
+        "default": 724,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter5_gain",
+        "min": -9216,
+        "max": 9216,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter6_enable",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter6_type",
+        "min": 0,
+        "max": 8,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter6_f0",
+        "min": 20,
+        "max": 24000,
+        "default": 200,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter6_Q",
+        "min": 1,
+        "max": 32767,
+        "default": 724,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter6_gain",
+        "min": -9216,
+        "max": 9216,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter7_enable",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter7_type",
+        "min": 0,
+        "max": 8,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter7_f0",
+        "min": 20,
+        "max": 24000,
+        "default": 200,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter7_Q",
+        "min": 1,
+        "max": 32767,
+        "default": 724,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter7_gain",
+        "min": -9216,
+        "max": 9216,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter8_enable",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter8_type",
+        "min": 0,
+        "max": 8,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter8_f0",
+        "min": 20,
+        "max": 24000,
+        "default": 200,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter8_Q",
+        "min": 1,
+        "max": 32767,
+        "default": 724,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter8_gain",
+        "min": -9216,
+        "max": 9216,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter9_enable",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter9_type",
+        "min": 0,
+        "max": 8,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter9_f0",
+        "min": 20,
+        "max": 24000,
+        "default": 200,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter9_Q",
+        "min": 1,
+        "max": 32767,
+        "default": 724,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter9_gain",
+        "min": -9216,
+        "max": 9216,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter10_enable",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter10_type",
+        "min": 0,
+        "max": 8,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter10_f0",
+        "min": 20,
+        "max": 24000,
+        "default": 200,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter10_Q",
+        "min": 1,
+        "max": 32767,
+        "default": 724,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "filter10_gain",
+        "min": -9216,
+        "max": 9216,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      }
+    ]
+  },
+  "drc": {
+    "params": [
+      {
+        "name": "MODE",
+        "min": 0,
+        "max": 4,
+        "default": 0,
+        "method": 1,
+        "choices": [
+          "full band",
+          "2-band",
+          "2-band+full band",
+          "3-band",
+          "3-band+full band"
+        ]
+      },
+      {
+        "name": "CF type",
+        "min": 0,
+        "max": 3,
+        "default": 3,
+        "method": 1,
+        "choices": [
+          "B1",
+          "LR2",
+          "LR4",
+          "Q4"
+        ]
+      },
+      {
+        "name": "Q_L",
+        "min": 0,
+        "max": 32767,
+        "default": 724,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "Q_H",
+        "min": 0,
+        "max": 32767,
+        "default": 724,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "fc_0",
+        "min": 20,
+        "max": 20000,
+        "default": 300,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "fc_1",
+        "min": 20,
+        "max": 20000,
+        "default": 3000,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "threshold_0",
+        "min": -9000,
+        "max": 0,
+        "default": 0,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "threshold_1",
+        "min": -9000,
+        "max": 0,
+        "default": 0,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "threshold_2",
+        "min": -9000,
+        "max": 0,
+        "default": 0,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "threshold_3",
+        "min": -9000,
+        "max": 0,
+        "default": 0,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "ratio_0",
+        "min": 1,
+        "max": 1000,
+        "default": 100,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "ratio_1",
+        "min": 1,
+        "max": 1000,
+        "default": 100,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "ratio_2",
+        "min": 1,
+        "max": 1000,
+        "default": 100,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "ratio_3",
+        "min": 1,
+        "max": 1000,
+        "default": 100,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "attack_0",
+        "min": 0,
+        "max": 32767,
+        "default": 1,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "attack_1",
+        "min": 0,
+        "max": 32767,
+        "default": 1,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "attack_2",
+        "min": 0,
+        "max": 32767,
+        "default": 1,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "attack_3",
+        "min": 0,
+        "max": 32767,
+        "default": 1,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "release_0",
+        "min": 0,
+        "max": 32767,
+        "default": 1000,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "release_1",
+        "min": 0,
+        "max": 32767,
+        "default": 1000,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "release_2",
+        "min": 0,
+        "max": 32767,
+        "default": 1000,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "release_3",
+        "min": 0,
+        "max": 32767,
+        "default": 1000,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "pregain_0",
+        "min": -7200,
+        "max": 1800,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "pregain_1",
+        "min": -7200,
+        "max": 1800,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "pregain_2",
+        "min": -7200,
+        "max": 1800,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "pregain_3",
+        "min": -7200,
+        "max": 1800,
+        "default": 0,
+        "method": 0,
+        "choices": null
+      }
+    ]
+  },
+  "voice_changer": {
+    "params": [
+      {
+        "name": "pitch",
+        "min": 50,
+        "max": 300,
+        "default": 200,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "formant",
+        "min": 66,
+        "max": 200,
+        "default": 130,
+        "method": 1,
+        "choices": null
+      }
+    ]
+  },
+  "auto_tune": {
+    "params": [
+      {
+        "name": "key",
+        "min": 0,
+        "max": 11,
+        "default": 4,
+        "method": 0,
+        "choices": [
+          "A-flat major",
+          "A major",
+          "B-flat major",
+          "B major",
+          "C major",
+          "D-flat major",
+          "D major",
+          "E-flat major",
+          "E major",
+          "F major",
+          "G-flat major",
+          "G major chromatic scale"
+        ]
+      },
+      {
+        "name": "snap",
+        "min": 0,
+        "max": 2,
+        "default": 0,
+        "method": 0,
+        "choices": [
+          "near snap",
+          "upper snap",
+          "lower snap"
+        ]
+      },
+      {
+        "name": "pitch accuracy",
+        "min": 0,
+        "max": 2,
+        "default": 2,
+        "method": 0,
+        "choices": [
+          "normal accuracy",
+          "better accuracy",
+          "best accuracy"
+        ]
+      }
+    ]
+  },
+  "reverb": {
+    "params": [
+      {
+        "name": "dry",
+        "min": 0,
+        "max": 200,
+        "default": 50,
+        "method": 2,
+        "choices": null
+      },
+      {
+        "name": "wet",
+        "min": 0,
+        "max": 300,
+        "default": 100,
+        "method": 2,
+        "choices": null
+      },
+      {
+        "name": "width",
+        "min": 0,
+        "max": 100,
+        "default": 100,
+        "method": 2,
+        "choices": null
+      },
+      {
+        "name": "room",
+        "min": 0,
+        "max": 100,
+        "default": 60,
+        "method": 2,
+        "choices": null
+      },
+      {
+        "name": "damping",
+        "min": 0,
+        "max": 100,
+        "default": 50,
+        "method": 2,
+        "choices": null
+      },
+      {
+        "name": "mono",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "method": 2,
+        "choices": null
+      }
+    ]
+  },
+  "echo": {
+    "params": [
+      {
+        "name": "cutoff frequency",
+        "min": 0,
+        "max": 24000,
+        "default": 7500,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "attenuation",
+        "min": -900,
+        "max": 0,
+        "default": -200,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "delay",
+        "min": 0,
+        "max": 3000,
+        "default": 400,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "max delay",
+        "min": 0,
+        "max": 3000,
+        "default": 1000,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "high quality enable",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "dry",
+        "min": 0,
+        "max": 100,
+        "default": 100,
+        "method": 0,
+        "choices": null
+      },
+      {
+        "name": "wet",
+        "min": 0,
+        "max": 100,
+        "default": 100,
+        "method": 0,
+        "choices": null
+      }
+    ]
+  },
+  "gain_control": {
+    "params": [
+      {
+        "name": "mute",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "method": 16,
+        "choices": null
+      },
+      {
+        "name": "gain",
+        "min": -9000,
+        "max": 1200,
+        "default": 0,
+        "method": 16,
+        "choices": null
+      }
+    ]
+  },
+  "noise_suppressor_expander": {
+    "params": [
+      {
+        "name": "threshold",
+        "min": -9000,
+        "max": 0,
+        "default": -4500,
+        "method": 2,
+        "choices": null
+      },
+      {
+        "name": "ratio",
+        "min": 1,
+        "max": 1000,
+        "default": 3,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "attack",
+        "min": 0,
+        "max": 7500,
+        "default": 5,
+        "method": 1,
+        "choices": null
+      },
+      {
+        "name": "release",
+        "min": 0,
+        "max": 7500,
+        "default": 500,
+        "method": 1,
+        "choices": null
+      }
+    ]
+  },
+  "pitch_shifter": {
+    "params": [
+      {
+        "name": "key",
+        "min": -120,
+        "max": 120,
+        "default": 0,
+        "method": 2,
+        "choices": null
+      }
+    ]
+  },
+  "pitch_shifter_pro": {
+    "params": [
+      {
+        "selector": 1,
+        "name": "key",
+        "min": -120,
+        "max": 120,
+        "step": 1,
+        "choices": null,
+        "default": 0,
+        "method": 1
+      }
+    ]
+  },
+  "voice_changer_pro": {
+    "params": [
+      {
+        "selector": 1,
+        "name": "pitch",
+        "min": 50,
+        "max": 300,
+        "step": 5,
+        "choices": null,
+        "default": 200,
+        "method": 1
+      },
+      {
+        "selector": 2,
+        "name": "formant",
+        "min": 66,
+        "max": 200,
+        "step": 5,
+        "choices": null,
+        "default": 130,
+        "method": 1
+      }
+    ]
+  },
+  "reverb_plate": {
+    "params": [
+      {
+        "selector": 1,
+        "name": "high cutoff frequency",
+        "min": 0,
+        "max": 24000,
+        "step": 1,
+        "choices": null,
+        "default": 20000,
+        "method": 1
+      },
+      {
+        "selector": 2,
+        "name": "modulation",
+        "min": 0,
+        "max": 1,
+        "choices": null,
+        "default": 1,
+        "method": 1
+      },
+      {
+        "selector": 3,
+        "name": "predelay",
+        "min": 0,
+        "max": 4410,
+        "step": 1,
+        "choices": null,
+        "default": 40,
+        "method": 2
+      },
+      {
+        "selector": 4,
+        "name": "diffusion",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "choices": null,
+        "default": 40,
+        "method": 2
+      },
+      {
+        "selector": 5,
+        "name": "decay",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "choices": null,
+        "default": 50,
+        "method": 2
+      },
+      {
+        "selector": 6,
+        "name": "damping",
+        "min": 0,
+        "max": 10000,
+        "step": 1,
+        "choices": null,
+        "default": 5,
+        "method": 2
+      },
+      {
+        "selector": 7,
+        "name": "wetdrymix",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "choices": null,
+        "default": 80,
+        "method": 2
+      }
+    ]
+  },
+  "howling_suppressor_fine": {
+    "params": [
+      {
+        "selector": 1,
+        "name": "q_min",
+        "min": 256,
+        "max": 16384,
+        "step": 1,
+        "choices": null,
+        "default": 512,
+        "method": 0
+      },
+      {
+        "selector": 2,
+        "name": "q_max",
+        "min": 256,
+        "max": 16384,
+        "step": 1,
+        "choices": null,
+        "default": 5120,
+        "method": 0
+      }
+    ]
+  }
+}
