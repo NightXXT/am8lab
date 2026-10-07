@@ -3,7 +3,7 @@
 Windows 10/11 x64. Escolha o setup nas Releases, confira o hash no PowerShell:
 
 ```powershell
-Get-FileHash -LiteralPath .\AM8-Lab-Setup-v0.6.7.exe -Algorithm SHA256
+Get-FileHash -LiteralPath .\AM8-Lab-Setup-v0.6.8.exe -Algorithm SHA256
 ```
 
 Compare com SHA256SUMS.txt da mesma Release. Um hash confere integridade em relação à lista; uma lista alterada junto com o arquivo não oferece autenticidade. Este lançamento é sem assinatura Authenticode.

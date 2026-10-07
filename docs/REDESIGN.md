@@ -42,3 +42,7 @@ Não há fontes remotas, CDN de ícones ou imagens hospedadas exigidas para abri
 ## Verificação
 
 Em 07/10/2026, passaram 42 testes Rust, 28 verificações da interface com USB simulado, 17 verificações de atualizações e o smoke de ganho dos fones. Estúdio, Voz, equalizador/Fones, Perfis e Capacidades foram conferidos em 1440×900 e 1100×720, com atualizações, estado desconectado e movimento reduzido, sem overflow horizontal ou erros JavaScript. Medidores mantêm transições de largura e posição desativadas. O executável portátil e o instalado passaram no smoke; instalação e desinstalação isoladas confirmaram a versão 0.6.7 e preservaram o diário. WebView2 já estava presente; o ramo sem WebView2 e o clique real do download não foram testados. Não houve nova escuta nem mudança real de parâmetros do AM8 nesta implementação. A prévia de Estúdio entregue é simulada e está identificada na imagem. As evidências auditivas dos efeitos e do EQ permanecem nos relatórios históricos; um redesign visual não valida novos valores acústicos.
+
+## Ajuste visual 0.6.8
+
+A ilustração de microfone foi removida do painel Estúdio a pedido do usuário. As informações de USB, filtros e firmware foram redistribuídas; os seletores da arte e suas regras responsivas foram removidos. Layout conferido em 1440×900 e 1100×720, com prévia sem comunicação USB.
