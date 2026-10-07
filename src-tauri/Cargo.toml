@@ -1,0 +1,38 @@
+[package]
+name = "am8-lab"
+version = "0.6.7"
+edition = "2024"
+license = "MIT"
+default-run = "am8-lab"
+autobins = false
+description = "AM8 Lab: reversible USB microphone controls"
+
+[features]
+default = ["desktop"]
+desktop = ["dep:tauri", "tauri/custom-protocol"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+tauri = { version = "2", optional = true , features = [] }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62.2", features = ["Win32_Media_Audio", "Win32_System_Com", "Win32_System_Com_StructuredStorage", "Win32_Devices_FunctionDiscovery", "Win32_UI_Shell_PropertiesSystem", "Win32_System_Variant", "Win32_Networking_WinHttp", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[[bin]]
+name = "am8-lab"
+path = "src/main.rs"
+required-features = ["desktop"]
+
+[[example]]
+name = "am8-diagnostic"
+path = "examples/diagnostic.rs"
+
+[profile.release]
+strip = true
+lto = "thin"
+codegen-units = 1
