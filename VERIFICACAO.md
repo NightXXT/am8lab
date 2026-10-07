@@ -1,3 +1,22 @@
+# Verificação da entrega 0.6.9
+
+07/10/2026. O botão Aplicar foi mantido; a consulta das respostas USB foi acelerada e leituras de preparação foram deduplicadas dentro de cada comando. Guardas de compatibilidade, diário antes das escritas, confirmação por leitura, snapshot completo após a aplicação e restauração foram preservados.
+
+- 47 testes Rust aprovados na versão 0.6.9, incluindo guardas de sessão, falhas/recuperação e deduplicação de leituras. O estado completo após as escritas continua observando alterações externas nos blocos não afetados.
+- Medição física em um AM8 normal USB B5 0.7.1: 162 consultas de 18 blocos, em intervalos de 80/16/8 ms, corresponderam à referência, sem escritas.
+- Nove ajustes foram aplicados, confirmados novamente após 400 ms e restaurados ao estado inicial. Ruído: 5,22 s → 1,32 s; tom padrão: 5,82 s → 1,33 s. Esses tempos incluem o comando Rust, guardas, confirmação e snapshot; são uma execução por ajuste, sem medição do clique ou renderização da interface. Efeitos mais complexos continuam levando mais tempo.
+- Estado inicial de todos os blocos e do ganho preservado após cada caso e ao terminar; diário sem recuperação pendente. Relatórios públicos sem serial ou caminhos pessoais em docs/performance; metodologia em docs/PERFORMANCE.md.
+- Compilação release x64 e instalador NSIS 0.6.9 concluídos com saída 0.
+- Executável ProductVersion 0.6.9; --smoke-test terminou com saída 0, sem comunicação USB. O diário existente permaneceu intacto durante o smoke.
+
+Não houve nova avaliação auditiva, auditoria RustSec, instalação/desinstalação ou execução aprovada de CI no GitHub nesta verificação. A cadência de escritas e as esperas específicas de processamento foram mantidas. As medições físicas cobriram uma unidade/revisão; não garantem os mesmos tempos em outros computadores. Reverb continua experimental e esta alteração não afirma corrigir os estalos relatados anteriormente.
+
+Binários sem assinatura Authenticode. A compatibilidade permanece restrita ao AM8 USB B5 0.7.1 com fluxo conhecido.
+
+---
+
+Os resultados abaixo são históricos.
+
 # Verificação da entrega 0.6.8
 
 - Compilação release e instalador NSIS concluídos.

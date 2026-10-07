@@ -7,10 +7,10 @@
 **Software experimental para ajustar sua voz e os fones no DSP do FIFINE AM8 USB.**
 
 ![Windows 10/11 x64](https://img.shields.io/badge/Windows-10%2F11%20x64-0078D4?style=flat-square)
-![Versão 0.6.8 experimental](https://img.shields.io/badge/vers%C3%A3o-0.6.8%20experimental-8B5CF6?style=flat-square)
+![Versão 0.6.9 experimental](https://img.shields.io/badge/vers%C3%A3o-0.6.9%20experimental-8B5CF6?style=flat-square)
 [![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-22C55E?style=flat-square)](LICENSE)
 
-**[Baixar instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.6.8/AM8-Lab-Setup-v0.6.8.exe)** · [Versão portátil](https://github.com/NightXXT/am8lab/releases/download/v0.6.8/AM8-Lab-Portable-v0.6.8.zip) · [Hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.6.8/SHA256SUMS.txt) · [Release 0.6.8](https://github.com/NightXXT/am8lab/releases/tag/v0.6.8)
+**[Baixar instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.6.9/AM8-Lab-Setup-v0.6.9.exe)** · [Versão portátil](https://github.com/NightXXT/am8lab/releases/download/v0.6.9/AM8-Lab-Portable-v0.6.9.zip) · [Hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.6.9/SHA256SUMS.txt) · [Release 0.6.9](https://github.com/NightXXT/am8lab/releases/tag/v0.6.9)
 
 [Instalação](#instalação) · [Atualizações](#atualizações) · [Recursos](#recursos) · [Compatibilidade](#compatibilidade) · [Segurança](SECURITY.md) · [English](README.en.md)
 
@@ -30,6 +30,12 @@ Construído com **Rust + Tauri**, com interface em português, medidores de áud
 ![AM8 Lab: tela Estúdio com dados simulados](docs/assets/studio-preview.png)
 
 *Prévia da interface com dados simulados. Os medidores do aplicativo conectado usam leituras HID relativas, sem calibração em dB.*
+
+### Aplicar mais rápido na 0.6.9
+
+O botão **Aplicar** continua enviando os ajustes quando você confirma. A comunicação USB consulta as respostas com menos espera e reaproveita leituras de preparação dentro do mesmo comando. Em um AM8 B5 0.7.1, o comando de ruído caiu de **5,22 s para 1,32 s**; o tom padrão, de **5,82 s para 1,33 s**. São medições locais de uma aplicação por ajuste, incluindo verificação do aparelho, confirmação por leitura e atualização completa do estado.
+
+O diário antes das escritas, a verificação de compatibilidade e a restauração foram preservados. Efeitos com mais parâmetros ou espera de processamento continuam levando mais tempo. Consulte [a metodologia, os resultados e os limites](docs/PERFORMANCE.md).
 
 ### Ajuste visual na 0.6.8
 
@@ -89,8 +95,8 @@ Os medidores usam uma **escala visual relativa**, sem calibração em dB. A resp
 
 **Requisitos:** Windows 10/11 x64, WebView2 e AM8 USB compatível.
 
-1. Abra a [Release 0.6.8](https://github.com/NightXXT/am8lab/releases/tag/v0.6.8).
-2. Baixe o [instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.6.8/AM8-Lab-Setup-v0.6.8.exe) e os [hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.6.8/SHA256SUMS.txt).
+1. Abra a [Release 0.6.9](https://github.com/NightXXT/am8lab/releases/tag/v0.6.9).
+2. Baixe o [instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.6.9/AM8-Lab-Setup-v0.6.9.exe) e os [hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.6.9/SHA256SUMS.txt).
 3. Confira o hash conforme [o guia de instalação](docs/INSTALL.md) e execute o setup.
 4. Conecte o AM8 por **USB** e abra o programa.
 
@@ -99,7 +105,7 @@ O setup instala para o usuário atual, cria atalhos e inclui desinstalador. Se o
 <details>
 <summary><strong>Prefere uma versão portátil?</strong></summary>
 
-Baixe `AM8-Lab-Portable-v0.6.8.zip` nas Releases, confira o hash, extraia a pasta e abra `AM8-Lab.exe`. Mantenha os arquivos de licença que acompanham o programa. WebView2 precisa estar instalado.
+Baixe `AM8-Lab-Portable-v0.6.9.zip` nas Releases, confira o hash, extraia a pasta e abra `AM8-Lab.exe`. Mantenha os arquivos de licença que acompanham o programa. WebView2 precisa estar instalado.
 
 </details>
 
@@ -204,6 +210,8 @@ Não. Esses recursos estão fora desta versão. Os efeitos experimentais e seus 
 ## Segurança e privacidade
 
 A interface permite somente comandos próprios tipados e escuta de eventos. Os valores são validados no Rust; o app não oferece comandos genéricos de shell, rede ou arquivos pela interface. Ele não grava voz, não faz upload de áudio e não inclui telemetria de rede. A consulta manual de atualizações acessa a API pública do GitHub por HTTPS e informa a versão do app no User-Agent.
+
+Na versão 0.6.9, **47 testes Rust passaram**; a medição física de nove aplicações confirmou os valores e sua restauração. A metodologia e os limites estão em [PERFORMANCE.md](docs/PERFORMANCE.md). A auditoria RustSec não foi repetida nesta versão.
 
 Na versão 0.6.7, **42 testes Rust passaram**, incluindo 11 testes novos para selecionar Releases, versões, limites e URLs de atualização, além de 17 verificações da interface de atualizações com transporte simulado. O resumo do teste do executável, instalador e consulta real está em [verificação da consulta](docs/UPDATES.md#verificação). Os testes históricos de efeitos e ganho continuam documentados em seus relatórios, sem nova avaliação auditiva nesta alteração.
 
