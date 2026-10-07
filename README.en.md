@@ -1,8 +1,33 @@
-# AM8 Lab
+# AM8 Lab · FIFINE AM8 software for Windows
 
 [Português](README.md)
 
+![AM8 Lab — Native DSP controls for the FIFINE AM8](docs/assets/banner.svg)
+
+![Windows 10/11 x64](https://img.shields.io/badge/Windows-10%2F11%20x64-0078D4?style=flat-square)
+![Experimental 0.6.7](https://img.shields.io/badge/version-0.6.7%20experimental-8B5CF6?style=flat-square)
+[![MIT license](https://img.shields.io/badge/license-MIT-22C55E?style=flat-square)](LICENSE)
+
+**[Download Windows installer](https://github.com/NightXXT/am8lab/releases/download/v0.6.7/AM8-Lab-Setup-v0.6.7.exe)** · [Portable ZIP](https://github.com/NightXXT/am8lab/releases/download/v0.6.7/AM8-Lab-Portable-v0.6.7.zip) · [SHA-256 hashes](https://github.com/NightXXT/am8lab/releases/download/v0.6.7/SHA256SUMS.txt) · [Release 0.6.7](https://github.com/NightXXT/am8lab/releases/tag/v0.6.7)
+
 Experimental, unofficial Windows USB controller for the FIFINE AM8's native DSP. Built with Rust + Tauri; the UI is in Portuguese. Voice effects and headphone playback EQ run on the AM8, without PC audio processing, a virtual microphone or firmware flashing.
+
+> [!IMPORTANT]
+> Initially validated on **one AM8 USB unit with B5 0.7.1 firmware**. Other revisions are refused. This project is not affiliated with or endorsed by FIFINE.
+
+![AM8 Lab studio interface: voice and headphone controls](docs/assets/studio-preview.png)
+
+*Interface preview with simulated data and no USB communication. This is not a new hardware measurement or test.*
+
+## Quick start
+
+1. Download the installer and verify the published SHA-256 hash. Binaries are not Authenticode-signed.
+2. Connect the AM8 by **USB**, open the app and wait for compatibility verification.
+3. Prepare an effect, click **Aplicar** (Apply) and use **Comparar com original** (Compare with original). Exit normally to restore the session.
+
+For headphone EQ, select the AM8 playback device in Windows and connect headphones to its P2 output. Other Windows playback devices are not affected.
+
+## Features and compatibility
 
 Download `AM8-Lab-Setup-v0.6.7.exe` and `SHA256SUMS.txt` from this repository's Releases. Check the hash, install, connect the microphone and apply controls. Setup installs for the current user and checks WebView2; if missing, Microsoft's embedded bootstrapper needs internet to install the runtime. Binaries are not Authenticode-signed; a hash is not a trust guarantee.
 
@@ -14,7 +39,7 @@ Choose **Voz** or **Fones** in the equalizer. Headphone EQ applies to Windows au
 
 Meters use real HID values, with a relative visual scale rather than calibrated dB. Playback response has not been fully characterized. Settings are temporary: comparison restores the pre-session reference and normal app exit restores all affected parameters/routes. Reconnect and restore if communication fails. A serial-bound local recovery journal is saved before hardware writes; pending unbound journals are preserved and refused.
 
-Profiles are local and load controls without automatically applying them. New profiles may include both EQs; older profiles without headphone EQ leave its current controls unchanged. Version 0.6.6 passed 42 Rust tests and 17 update UI checks with a mock transport. This change does not add new hardware listening validation. The dependency audit from 0.6.3 is carried forward with unchanged dependency versions; it was not rerun for 0.6.6. See [build instructions](docs/BUILD.md), [security policy](SECURITY.md), [review](docs/SECURITY-REVIEW.md) and [data provenance](docs/PROVENANCE.md). Do not share personal serials or recovery files in Issues.
+Profiles are local and load controls without automatically applying them. New profiles may include both EQs; older profiles without headphone EQ leave its current controls unchanged. Version 0.6.7 passed 42 Rust tests and 17 update UI checks with a mock transport, alongside the redesign checks documented in [VERIFICACAO.md](VERIFICACAO.md). This change does not add new hardware listening validation. The dependency audit from 0.6.3 is carried forward with unchanged dependency versions; it was not rerun for 0.6.7. See [build instructions](docs/BUILD.md), [security policy](SECURITY.md), [review](docs/SECURITY-REVIEW.md) and [data provenance](docs/PROVENANCE.md). Do not share personal serials or recovery files in Issues.
 
 MIT for original code; third-party notices apply. Not affiliated with FIFINE.
 
@@ -31,3 +56,21 @@ The app examines up to 30 published Releases and selects the highest canonical `
 The interface now follows the supplied Google Stitch voice-screen export and design guide: graphite surfaces, restrained violet accents, thin meters and navigation for **Estúdio**, **Voz**, **Fones**, **Perfis** and **Capacidades**. Each voice module retains its own Apply action. Headphone and microphone EQ remain independent. Capabilities are grouped by listening evidence, communication/recovery checks and experimental status.
 
 Interface fonts, icons and styles are local or provided by the system, without font/CDN requests at startup. Native DSP commands, recovery behavior and manual GitHub updates are preserved. Mock audio numbers from the design are not presented as real measurements. See [design mapping and limits](docs/REDESIGN.md).
+
+## FAQ
+
+**Is this official FIFINE software?** No. AM8 Lab is an independent, experimental application for one identified AM8 USB revision.
+
+**Does every AM8 work?** Compatibility checks require B5 0.7.1 and the known internal layout. Testing has covered one unit. Other revisions are refused; there is no firmware flashing.
+
+**Can I use XLR alone?** USB is required for the control commands. Documented listening checks concern USB audio and the AM8 headphone path, not XLR output.
+
+**Does headphone EQ affect games and Discord?** It affects Windows audio played through the AM8 and heard from its P2 output. It does not affect another sound card or USB headset.
+
+**Does it control RGB or autotune?** No. These features are excluded. Reverb and feedback suppression remain experimental.
+
+## Help improve the project
+
+Have a compatible AM8? [Report your results](https://github.com/NightXXT/am8lab/issues/new/choose) with the app version, displayed firmware, effects used and expected/observed behavior. Do not include serial numbers, recovery journals or private recordings. If this project is useful, consider starring it or sharing [the repository](https://github.com/NightXXT/am8lab).
+
+The Windows workflow is published, but its [first GitHub run](https://github.com/NightXXT/am8lab/actions/runs/37579658381) was blocked by an account billing issue before a runner started. The reported checks were performed locally.

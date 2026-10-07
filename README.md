@@ -1,8 +1,16 @@
 <div align="center">
 
+# AM8 Lab — FIFINE AM8 software for Windows
+
 ![AM8 Lab — Sua voz. O DSP do seu AM8.](docs/assets/banner.svg)
 
-**Ajuste sua voz e o áudio dos fones no DSP do FIFINE AM8.**
+**Software experimental para ajustar sua voz e os fones no DSP do FIFINE AM8 USB.**
+
+![Windows 10/11 x64](https://img.shields.io/badge/Windows-10%2F11%20x64-0078D4?style=flat-square)
+![Versão 0.6.7 experimental](https://img.shields.io/badge/vers%C3%A3o-0.6.7%20experimental-8B5CF6?style=flat-square)
+[![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-22C55E?style=flat-square)](LICENSE)
+
+**[Baixar instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.6.7/AM8-Lab-Setup-v0.6.7.exe)** · [Versão portátil](https://github.com/NightXXT/am8lab/releases/download/v0.6.7/AM8-Lab-Portable-v0.6.7.zip) · [Hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.6.7/SHA256SUMS.txt) · [Release 0.6.7](https://github.com/NightXXT/am8lab/releases/tag/v0.6.7)
 
 [Instalação](#instalação) · [Atualizações](#atualizações) · [Recursos](#recursos) · [Compatibilidade](#compatibilidade) · [Segurança](SECURITY.md) · [English](README.en.md)
 
@@ -16,6 +24,12 @@ Construído com **Rust + Tauri**, com interface em português, medidores de áud
 
 > [!IMPORTANT]
 > Validado inicialmente em **um AM8 normal USB, firmware B5 0.7.1**. Outras revisões podem ser diferentes e são recusadas pelo aplicativo. O projeto não é afiliado nem endossado pela FIFINE.
+
+**Para começar:** baixe o setup, confira o SHA-256, instale e conecte o AM8 por USB. O programa confere a compatibilidade antes de habilitar os ajustes. Os binários ainda não têm assinatura Authenticode; consulte [o guia de instalação](docs/INSTALL.md).
+
+![AM8 Lab: tela Estúdio com dados simulados](docs/assets/studio-preview.png)
+
+*Prévia da interface com dados simulados. Os medidores do aplicativo conectado usam leituras HID relativas, sem calibração em dB.*
 
 ## Recursos
 
@@ -71,8 +85,8 @@ Os medidores usam uma **escala visual relativa**, sem calibração em dB. A resp
 
 **Requisitos:** Windows 10/11 x64, WebView2 e AM8 USB compatível.
 
-1. Abra as [Releases de NightXXT/am8lab](https://github.com/NightXXT/am8lab/releases).
-2. Baixe `AM8-Lab-Setup-v0.6.7.exe` e `SHA256SUMS.txt`.
+1. Abra a [Release 0.6.7](https://github.com/NightXXT/am8lab/releases/tag/v0.6.7).
+2. Baixe o [instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.6.7/AM8-Lab-Setup-v0.6.7.exe) e os [hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.6.7/SHA256SUMS.txt).
 3. Confira o hash conforme [o guia de instalação](docs/INSTALL.md) e execute o setup.
 4. Conecte o AM8 por **USB** e abra o programa.
 
@@ -144,6 +158,24 @@ Não edite, apague ou copie esse arquivo para outro microfone quando houver uma 
 
 </details>
 
+## Perguntas frequentes
+
+### O FIFINE AM8 tem software?
+
+O **AM8 Lab** oferece controles experimentais para o DSP interno do AM8 USB compatível. É um projeto independente da comunidade; não é software oficial nem uma declaração de suporte da FIFINE. Veja os recursos e as evidências nos documentos deste repositório.
+
+### Funciona com USB ou XLR?
+
+Os comandos do AM8 Lab precisam da conexão **USB**. XLR sozinho não recebe esses comandos. Os efeitos aqui documentados foram ouvidos no caminho USB; não prometemos o mesmo comportamento pela saída XLR.
+
+### Funciona em qualquer AM8?
+
+Ainda não. A validação física cobriu **uma unidade do AM8 normal com firmware B5 0.7.1** e fluxo interno conhecido. O programa bloqueia revisões desconhecidas antes de escrever parâmetros. Não remova essa verificação para forçar uma conexão.
+
+### Como atualizo o programa?
+
+Use **Atualizações → Verificar atualizações → Baixar instalador**. Confira o hash, feche o aplicativo normalmente para restaurar a sessão e execute o novo setup. A instalação é manual; não há atualização de firmware. As [Releases](https://github.com/NightXXT/am8lab/releases) também podem ser acessadas pelo navegador.
+
 ## Limitações conhecidas
 
 > [!WARNING]
@@ -178,6 +210,24 @@ Abra uma **Issue** com:
 
 Não envie serial, caminhos pessoais, gravações privadas ou o diário completo. Para falhas de segurança, siga [SECURITY.md](SECURITY.md).
 
+## Perguntas frequentes
+
+**É um software oficial para o FIFINE AM8?** Não. AM8 Lab é um projeto independente e experimental que controla o DSP de uma revisão identificada do AM8 USB.
+
+**Funciona em qualquer AM8?** A revisão inicialmente validada é **B5 0.7.1**, com o fluxo descrito em [Compatibilidade](#compatibilidade). Outras revisões são recusadas. A aplicação não atualiza nem grava a firmware.
+
+**Posso usar só XLR?** Os comandos precisam da conexão USB. A avaliação audível documentada cobre USB e o áudio dos fones; o caminho XLR não foi validado.
+
+**O EQ dos fones muda o áudio dos jogos e do Discord?** Sim, quando esse áudio sai pelo dispositivo de reprodução do AM8 e é ouvido no P2 dele. Outra placa de som ou um fone USB não passa por esse EQ.
+
+**Tem RGB ou afinação automática?** Não. Esses recursos estão fora desta versão. Os efeitos experimentais e seus limites estão identificados na interface e nesta documentação.
+
+## Ajude a melhorar o AM8 Lab
+
+Se você tem um AM8 compatível, [conte seu resultado em uma Issue](https://github.com/NightXXT/am8lab/issues/new/choose), incluindo versão do app, firmware exibida e quais ajustes usou. Evite enviar serial, diário de recuperação ou áudio privado.
+
+Se o projeto for útil, você pode dar uma estrela e compartilhar o [link do repositório](https://github.com/NightXXT/am8lab). Consulte também a [documentação em inglês](README.en.md).
+
 ## Para desenvolvedores
 
 O código foi organizado para separar a interface dos comandos e da comunicação USB:
@@ -196,7 +246,7 @@ am8-lab/
 
 [Compilar no Windows](docs/BUILD.md) · [Contribuir](CONTRIBUTING.md) · [Origem dos dados](docs/PROVENANCE.md) · [Dependências](docs/DEPENDENCIES.json)
 
-O workflow verifica testes e dependências e gera o setup como artefato. Ele precisa ser habilitado no repositório; ainda não foi executado no GitHub nesta entrega local.
+O workflow está configurado para verificar testes e dependências e gerar o setup como artefato. Na publicação da 0.6.7, [a execução no GitHub Actions](https://github.com/NightXXT/am8lab/actions/runs/37579658381) não iniciou o runner por um bloqueio de cobrança da conta. Os resultados locais estão em [VERIFICACAO.md](VERIFICACAO.md); não representam uma execução aprovada de CI no GitHub.
 
 ---
 
