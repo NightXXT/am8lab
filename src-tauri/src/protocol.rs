@@ -91,9 +91,50 @@ pub fn decode(raw: &[u8], op: u8) -> Result<&[u8]> {
 pub trait Transport {
     fn query(&mut self, op: u8, payload: &[u8]) -> Result<Vec<u8>>;
     fn write_word(&mut self, block: Block, index: usize, value: i16) -> Result<()>;
+    fn write_dac_mode(&mut self, _mode: u16) -> Result<()> {
+        Err("Este transporte não permite ajustar o modo dos fones".into())
+    }
     fn guard(&mut self) -> Result<()>;
     fn serial(&self) -> &str;
     fn wait(&self, ms: u64) { thread::sleep(Duration::from_millis(ms)); }
+}
+
+pub fn validate_dac_mode(mode: u16) -> Result<()> {
+    if matches!(mode, 0 | 2) { Ok(()) } else { Err("Modo dos fones não validado; permitidos estéreo e mono".into()) }
+}
+
+/// The B5 0.7.1 DAC response is a tag followed by exactly fourteen u16 words.
+/// Only word seven is writable through this SDK; the other fields are observed.
+pub fn read_dac_words(t: &mut impl Transport) -> Result<[u16; 14]> {
+    let payload = t.query(0x09, &[])?;
+    if payload.len() != 29 || payload[0] != 255 { return Err("Layout do DAC diferente do validado".into()); }
+    let words = std::array::from_fn(|i| u16::from_le_bytes([payload[1 + i * 2], payload[2 + i * 2]]));
+    if words[0] != 3 || words[1] > 8 || words[2] > 3 || words[7] > 3 { return Err("Estado do DAC fora da referência validada".into()); }
+    Ok(words)
+}
+
+pub fn read_dac_mode(t: &mut impl Transport) -> Result<u16> {
+    let mode = read_dac_words(t)?[7];
+    validate_dac_mode(mode)?;
+    Ok(mode)
+}
+
+pub fn set_dac_mode(t: &mut impl Transport, mode: u16) -> Result<()> {
+    validate_dac_mode(mode)?;
+    let before = read_dac_words(t)?;
+    validate_dac_mode(before[7])?;
+    if before[7] == mode { return Ok(()); }
+    t.write_dac_mode(mode)?;
+    for _ in 0..6 {
+        t.wait(80);
+        let after = read_dac_words(t)?;
+        if before.iter().zip(&after).enumerate().any(|(index, (a, b))| index != 7 && a != b) {
+            return Err("Outra configuração do DAC mudou durante o ajuste dos fones".into());
+        }
+        validate_dac_mode(after[7])?;
+        if after[7] == mode { return Ok(()); }
+    }
+    Err("O DAC não confirmou o modo solicitado para os fones".into())
 }
 
 pub fn read_meter(t: &mut impl Transport, opcode: u8) -> Result<u16> {
@@ -217,6 +258,42 @@ pub fn target(effect: Effect, enabled: bool, values: &BTreeMap<String, i32>, bef
 
 #[cfg(test)]
 mod tests {
+    struct DacFake { response: Vec<u8>, written: Vec<u16> }
+    impl Transport for DacFake {
+        fn query(&mut self, op: u8, payload: &[u8]) -> Result<Vec<u8>> { assert_eq!(op, 0x09); assert!(payload.is_empty()); Ok(self.response.clone()) }
+        fn write_word(&mut self, _: Block, _: usize, _: i16) -> Result<()> { panic!("effect write forbidden in DAC test") }
+        fn write_dac_mode(&mut self, mode: u16) -> Result<()> { self.written.push(mode); self.response[15..17].copy_from_slice(&mode.to_le_bytes()); Ok(()) }
+        fn guard(&mut self) -> Result<()> { Ok(()) }
+        fn serial(&self) -> &str { "TEST" }
+        fn wait(&self, _: u64) {}
+    }
+    fn dac_fake() -> DacFake {
+        let words: [u16; 14] = [3,7,0,4095,4095,0,3,0,0,0,0,5,0,0];
+        DacFake { response: [vec![255], words.iter().flat_map(|v| v.to_le_bytes()).collect()].concat(), written: vec![] }
+    }
+    #[test] fn dac_parser_requires_the_validated_full_layout() {
+        let mut t = dac_fake();
+        assert_eq!(read_dac_words(&mut t).unwrap()[7], 0);
+        for response in [vec![], vec![255], vec![255; 27], vec![255; 31], vec![0; 29]] {
+            t.response = response; assert!(read_dac_words(&mut t).is_err());
+        }
+        for (index, value) in [(0usize, 2u16), (1, 9), (2, 4), (7, 4)] {
+            let mut t = dac_fake(); t.response[1 + index * 2..3 + index * 2].copy_from_slice(&value.to_le_bytes());
+            assert!(read_dac_words(&mut t).is_err());
+        }
+    }
+    #[test] fn dac_setter_accepts_only_stereo_and_mono_and_confirms_all_other_fields() {
+        let mut t = dac_fake(); let original = read_dac_words(&mut t).unwrap();
+        for mode in [1, 3, u16::MAX] { assert!(set_dac_mode(&mut t, mode).is_err()); }
+        assert!(t.written.is_empty());
+        set_dac_mode(&mut t, 2).unwrap(); assert_eq!(read_dac_mode(&mut t).unwrap(), 2);
+        let changed = read_dac_words(&mut t).unwrap();
+        for index in 0..14 { if index != 7 { assert_eq!(original[index], changed[index]); } }
+        set_dac_mode(&mut t, 0).unwrap(); assert_eq!(read_dac_words(&mut t).unwrap(), original);
+        assert_eq!(t.written, vec![2, 0]);
+        t.response[15..17].copy_from_slice(&1u16.to_le_bytes());
+        assert!(set_dac_mode(&mut t, 0).is_err()); assert_eq!(t.written, vec![2, 0]);
+    }
     #[test] fn individual_writes_reject_invalid_selectors_and_values() {
         assert!(validate_word(Block::Noise,0,2).is_err());
         assert!(validate_word(Block::Pitch,2,0).is_err());

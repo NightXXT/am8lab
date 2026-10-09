@@ -170,6 +170,13 @@ impl Transport for HidDevice {
         thread::sleep(Duration::from_millis(120));
         Ok(())
     }
+    fn write_dac_mode(&mut self, mode: u16) -> Result<()> {
+        protocol::validate_dac_mode(mode)?;
+        let bytes = mode.to_le_bytes();
+        self.send(0x09, &[7, bytes[0], bytes[1]])?;
+        thread::sleep(Duration::from_millis(120));
+        Ok(())
+    }
     fn guard(&mut self) -> Result<()> {
         let id = self.query(0, &[])?;
         if id != [0x42, 0, 7, 1, 2, 43, 2, 2, 23, 2, 2, b'B', b'5', 1] {

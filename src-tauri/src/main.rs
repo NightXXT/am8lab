@@ -28,6 +28,21 @@ async fn apply_effect(state: tauri::State<'_, Shared>, effect: Effect, enabled: 
     operation(state.inner().clone(), move |s, t| s.apply(t, effect, enabled, values)).await
 }
 #[tauri::command]
+async fn apply_headphone_mode(state: tauri::State<'_, Shared>, mode: String) -> Result<Snapshot> {
+    operation(state.inner().clone(), move |s, t| s.apply_headphone_mode(t, &mode)).await
+}
+#[tauri::command]
+async fn get_device_info(state: tauri::State<'_, Shared>) -> Result<am8_lab::device_info::DeviceInfo> {
+    if smoke_mode() || preview_mode() { return Err("Prévia da interface sem leitura do dispositivo".into()); }
+    let state = state.inner().clone();
+    if state.closing.load(Ordering::SeqCst) { return Err("Restauração para fechamento em andamento".into()); }
+    tauri::async_runtime::spawn_blocking(move || {
+        let _session = state.session.lock().map_err(|_| "Estado indisponível")?;
+        if state.closing.load(Ordering::SeqCst) { return Err("O aplicativo está restaurando para fechar".into()); }
+        am8_lab::device_info::read(&mut HidDevice::open()?)
+    }).await.map_err(|error| error.to_string())?
+}
+#[tauri::command]
 async fn compare_original(state: tauri::State<'_, Shared>) -> Result<Snapshot> {
     operation(state.inner().clone(), |s, t| s.compare(t)).await
 }
@@ -90,7 +105,7 @@ fn main() {
     let session = match Session::open(path) { Ok(s) => s, Err(e) => { show_error(&e); return; } };
     tauri::Builder::default()
         .manage(Shared { session: Arc::new(Mutex::new(session)), closing: Arc::new(AtomicBool::new(false)), updates: Arc::new(Updates::new()) })
-        .invoke_handler(tauri::generate_handler![inspect, apply_effect, compare_original, restore_all, test_gain, smoke_mode, preview_mode, finish_smoke, recovery_pending, get_update_info, check_updates, open_releases, download_update])
+        .invoke_handler(tauri::generate_handler![inspect, apply_effect, apply_headphone_mode, get_device_info, compare_original, restore_all, test_gain, smoke_mode, preview_mode, finish_smoke, recovery_pending, get_update_info, check_updates, open_releases, download_update])
         .setup(move |app| {
             if !smoke { start_telemetry(app.handle().clone(), app.state::<Shared>().inner().clone()); }
             Ok(())
