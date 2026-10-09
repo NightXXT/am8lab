@@ -1,0 +1,93 @@
+{
+  "after_dac": [
+    3,
+    7,
+    0,
+    4095,
+    4095,
+    0,
+    3,
+    0,
+    0,
+    0,
+    0,
+    5,
+    0,
+    0
+  ],
+  "all_originals_restored": true,
+  "before_dac": [
+    3,
+    7,
+    0,
+    4095,
+    4095,
+    0,
+    3,
+    0,
+    0,
+    0,
+    0,
+    5,
+    0,
+    0
+  ],
+  "device_info": {
+    "firmware": "B5 0.7.1",
+    "headset_mode": "stereo",
+    "internal_frame_samples_inferred": 256,
+    "internal_sample_rate_hz_inferred": 44100,
+    "reported_core_clock_mhz": 240,
+    "usb_capabilities_source": "Descriptors observed in the validated B5 0.7.1 unit; not a new USB descriptor fetch",
+    "usb_capture_channels": 2,
+    "usb_playback_channels": 2,
+    "usb_protocol": "UAC 1.0",
+    "usb_sample_rates_hz": [
+      44100,
+      48000
+    ],
+    "usb_speed": "Full Speed",
+    "usb_transport_bits": [
+      16,
+      24
+    ],
+    "voice_mode_status": "investigating",
+    "windows_capture_channels": 2,
+    "windows_capture_mix_bits": 32,
+    "windows_capture_sample_rate_hz": 48000,
+    "windows_playback_channels": 2,
+    "windows_playback_mix_bits": 32,
+    "windows_playback_sample_rate_hz": 48000
+  },
+  "elapsed_ms": 3725,
+  "error": null,
+  "final_dac_read_error": null,
+  "firmware": "B5 0.7.1",
+  "recovery_pending": false,
+  "restore_error": null,
+  "test": "integrated_headphone_mode_transaction",
+  "test_result": {
+    "active_dac": [
+      3,
+      7,
+      0,
+      4095,
+      4095,
+      0,
+      3,
+      2,
+      0,
+      0,
+      0,
+      5,
+      0,
+      0
+    ],
+    "comparison_stereo_confirmed": true,
+    "journal_version": 4,
+    "restart_recovery_loaded": true,
+    "resumed_mono_confirmed": true
+  },
+  "version": "0.7.0",
+  "writes_scope": "Only DAC0 0x09 selector 7, modes 0 and 2"
+}

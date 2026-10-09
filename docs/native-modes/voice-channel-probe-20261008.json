@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "operation": "read_only_raw_capture_channel_statistics",
+  "endpoint_selection": "exactly_one_active_capture_endpoint_named_fifine",
+  "raw_requested": true,
+  "raw_properties_accepted": true,
+  "initialized": true,
+  "started": true,
+  "requested_seconds": 60,
+  "elapsed_capture_seconds": 60.0045205,
+  "stopped_by_stdin": false,
+  "sample_rate_hz": 48000,
+  "channels": 2,
+  "bits_per_sample": 32,
+  "sample_format": "ieee_float32_native_shared_mix_no_forced_conversion",
+  "buffer_capacity_frames": 4800,
+  "stream_latency_100ns": 0,
+  "packets": 5998,
+  "total_frames": 2879040,
+  "total_channel_samples": 5758080,
+  "silent_packets": 0,
+  "silent_frames_excluded": 0,
+  "discontinuity_packets": 1,
+  "timestamp_error_packets": 0,
+  "unknown_flag_packets": 0,
+  "device_position_regressions": 0,
+  "nonfinite_frames_excluded": 0,
+  "all_non_silent_finite_samples": {
+    "frames": 2879040,
+    "bit_exact_frames": 2879040,
+    "bit_exact_percent": 100.0,
+    "rms_linear": [
+      0.005605751611369443,
+      0.005605751611369443
+    ],
+    "rms_dbfs": [
+      -45.027322991313106,
+      -45.027322991313106
+    ],
+    "difference_rms_linear": 0.0,
+    "difference_rms_dbfs": null,
+    "dc_offset_linear": [
+      3.071818399312722e-7,
+      3.071818399312722e-7
+    ],
+    "peak_linear": [
+      0.06752145290374756,
+      0.06752145290374756
+    ],
+    "peak_dbfs": [
+      -23.41116442560669,
+      -23.41116442560669
+    ],
+    "pearson_correlation": 1.0
+  },
+  "relevant_threshold_dbfs": -60.0,
+  "minimum_relevant_frames": 4800,
+  "relevant_samples": {
+    "frames": 2576382,
+    "bit_exact_frames": 2576382,
+    "bit_exact_percent": 100.0,
+    "rms_linear": [
+      0.005922646802080286,
+      0.005922646802080286
+    ],
+    "rms_dbfs": [
+      -44.54968331605243,
+      -44.54968331605243
+    ],
+    "difference_rms_linear": 0.0,
+    "difference_rms_dbfs": null,
+    "dc_offset_linear": [
+      1.9385124741634844e-6,
+      1.9385124741634844e-6
+    ],
+    "peak_linear": [
+      0.06752145290374756,
+      0.06752145290374756
+    ],
+    "peak_dbfs": [
+      -23.41116442560669,
+      -23.41116442560669
+    ],
+    "pearson_correlation": 1.0
+  },
+  "evaluation": "bit_exact_equal_channels_in_relevant_sampled_signal",
+  "error": null,
+  "limitations": [
+    "WASAPI RAW preserves always-on endpoint/driver/hardware processing; this is not direct USB packet capture.",
+    "Shared Windows format may differ from USB transport bit depth and sample rate.",
+    "Equal channels demonstrate duplication for the sampled signal; they do not establish every routing mode or true independent stereo microphone capture.",
+    "No PCM or voice samples are saved; only aggregate statistics are retained.",
+    "SILENT packets and nonfinite samples are excluded from equality, RMS and correlation; relevant samples require either channel at or above -60 dBFS.",
+    "Correlation is Pearson correlation after DC removal; null denotes insufficient variance. Null dBFS denotes zero amplitude.",
+    "Device endpoint selection uses its FIFINE friendly name and cannot independently authenticate its hardware revision."
+  ],
+  "sources": [
+    "https://learn.microsoft.com/en-us/windows/win32/api/audioclient/ne-audioclient-audclnt_streamoptions",
+    "https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient2-setclientproperties",
+    "https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudiocaptureclient-getbuffer",
+    "https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudiocaptureclient-releasebuffer",
+    "https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getmixformat"
+  ]
+}
