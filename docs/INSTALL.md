@@ -3,7 +3,7 @@
 Windows 10/11 x64. Escolha o setup nas Releases, confira o hash no PowerShell:
 
 ```powershell
-Get-FileHash -LiteralPath .\AM8-Lab-Setup-v0.6.9.exe -Algorithm SHA256
+Get-FileHash -LiteralPath .\AM8-Lab-Setup-v0.7.0.exe -Algorithm SHA256
 ```
 
 Compare com SHA256SUMS.txt da mesma Release. Um hash confere integridade em relação à lista; uma lista alterada junto com o arquivo não oferece autenticidade. Este lançamento é sem assinatura Authenticode.
@@ -15,6 +15,8 @@ Depois conecte o AM8 USB. A checagem do aparelho acontece no aplicativo e revis�
 Para usar o **EQ dos fones**, conecte os fones ao P2 do AM8 e selecione o dispositivo de reprodução do AM8 nas configurações de som do Windows. Jogos e aplicativos que escolhem uma saída própria também precisam usar esse dispositivo. Abra **Fones** na navegação ou selecione **Fones** no equalizador, prepare os controles e pressione **Aplicar**. O programa consulta a saída padrão, mas não a altera nem detecta fisicamente a inserção do plugue P2.
 
 Antes de desinstalar, fechar normalmente e restaurar a sessão. O desinstalador não deve ser tratado como ferramenta de recuperação do DSP. Mantenha o diário se houver falha/desconexão. A versão portátil exige WebView2 já instalado.
+
+Na 0.7.0, **Fones** também oferece **Mono/Estéreo**, com seu próprio botão Aplicar. **Comparar** alterna entre o modo aplicado e o original; **Restaurar** e o fechamento normal recuperam o modo salvo. Perfis locais continuam guardando os controles de efeitos/EQ; o modo dos fones não é salvo nos perfis nesta versão. Um diário que inclua o modo usa versão 4 e deve ser recuperado pela versão nova antes de voltar a um aplicativo antigo. Veja [modos e informações](NATIVE-MODES.md).
 
 ## Atualizar uma instalação
 
