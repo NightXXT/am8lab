@@ -1,4 +1,21 @@
-# Verificação da entrega 0.6.9
+# Verificação da entrega 0.7.0
+
+08/10/2026. Controle mono/estéreo dos fones e área de informações do AM8 adicionados. A seleção continua preparada até pressionar Aplicar.
+
+- **62 testes Rust passaram**, incluindo limites/layout do DAC, exclusão de outros campos, diário antes das escritas, serial, rollback, recuperação após reabrir e comparação coordenada com efeitos.
+- Teste físico anterior de 60 segundos: mono e retorno ao estéreo confirmados pelo usuário no P2. Integração nova: aplicação, comparação, retomada e recuperação após reabrir verificadas no aparelho; os 14 campos do DAC retornaram ao estado inicial, sem recuperação pendente.
+- Captura RAW de 60 segundos: 2.576.382 quadros relevantes acima de −60 dBFS; 100% dos canais L/R iguais bit a bit, diferença RMS zero e correlação 1. Formato compartilhado 48 kHz/2 canais/float32. Uma indicação de descontinuidade, nenhum erro de timestamp ou captura. Apenas estatísticas foram salvas.
+- Informações conferidas no backend e na interface nativa: núcleo reportado 240 MHz, taxa interna inferida 44,1 kHz, quadro inferido 256 amostras, mixer Windows 48 kHz/2 canais/32 bits nos dois sentidos. Capacidades USB previamente identificadas: 44,1/48 kHz, dois canais e transporte 16/24 bits.
+- Compilação release x64 e instalador NSIS **0.7.0** concluídos com saída 0. ProductVersion 0.7.0; **--smoke-test terminou com saída 0** e preservou o arquivo de recuperação existente.
+- Conferência real pela janela: Mono preparado sem aplicar automaticamente, confirmação após Aplicar e restauração para Estéreo; informações exibidas após consulta sob demanda. Layout conferido na janela de 1440 px.
+
+Relatórios sem serial ou caminhos pessoais em [docs/native-modes](docs/native-modes). Método e limites em [NATIVE-MODES.md](docs/NATIVE-MODES.md). Os resultados valem para a unidade B5 0.7.1 testada. RAW não equivale a capturar os pacotes USB; 32 bits no mixer não medem resolução física do ADC. O estéreo da voz continua em investigação.
+
+O instalador não foi executado para atualizar a instalação anterior nesta verificação. Os resultados locais acima precedem a publicação no GitHub. Não houve nova auditoria RustSec ou execução aprovada de CI. Dependências do aplicativo permanecem as da 0.6.9. Binários sem assinatura Authenticode.
+
+---
+
+# Histórico — verificação da entrega 0.6.9
 
 07/10/2026. O botão Aplicar foi mantido; a consulta das respostas USB foi acelerada e leituras de preparação foram deduplicadas dentro de cada comando. Guardas de compatibilidade, diário antes das escritas, confirmação por leitura, snapshot completo após a aplicação e restauração foram preservados.
 

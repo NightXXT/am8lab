@@ -7,10 +7,10 @@
 **Software experimental para ajustar sua voz e os fones no DSP do FIFINE AM8 USB.**
 
 ![Windows 10/11 x64](https://img.shields.io/badge/Windows-10%2F11%20x64-0078D4?style=flat-square)
-![Versão 0.6.9 experimental](https://img.shields.io/badge/vers%C3%A3o-0.6.9%20experimental-8B5CF6?style=flat-square)
+![Versão 0.7.0 experimental](https://img.shields.io/badge/vers%C3%A3o-0.7.0%20experimental-8B5CF6?style=flat-square)
 [![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-22C55E?style=flat-square)](LICENSE)
 
-**[Baixar instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.6.9/AM8-Lab-Setup-v0.6.9.exe)** · [Versão portátil](https://github.com/NightXXT/am8lab/releases/download/v0.6.9/AM8-Lab-Portable-v0.6.9.zip) · [Hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.6.9/SHA256SUMS.txt) · [Release 0.6.9](https://github.com/NightXXT/am8lab/releases/tag/v0.6.9)
+**[Baixar instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.7.0/AM8-Lab-Setup-v0.7.0.exe)** · [Versão portátil](https://github.com/NightXXT/am8lab/releases/download/v0.7.0/AM8-Lab-Portable-v0.7.0.zip) · [Hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.7.0/SHA256SUMS.txt) · [Release 0.7.0](https://github.com/NightXXT/am8lab/releases/tag/v0.7.0)
 
 [Instalação](#instalação) · [Atualizações](#atualizações) · [Recursos](#recursos) · [Compatibilidade](#compatibilidade) · [Segurança](SECURITY.md) · [English](README.en.md)
 
@@ -31,6 +31,12 @@ Construído com **Rust + Tauri**, com interface em português, medidores de áud
 
 *Prévia da interface com dados simulados. Os medidores do aplicativo conectado usam leituras HID relativas, sem calibração em dB.*
 
+### Novo na 0.7.0 · Modos dos fones e informações do AM8
+
+O modo **Mono/Estéreo dos fones** agora tem controle próprio, com botão Aplicar, comparação e restauração. A soma ocorre no DAC do AM8. O teste de 60 segundos confirmou mono nos dois ouvidos e o retorno ao estéreo.
+
+Em **Capacidades**, consulte canais, taxas USB, formato do mixer Windows, vazão PCM calculada e clock reportado do núcleo. Uma medição da voz confirmou sinal mono duplicado em dois canais USB no caminho atual. O estéreo da voz continua em investigação, sem seletor liberado. Veja [os testes, o método e os limites](docs/NATIVE-MODES.md).
+
 ### Aplicar mais rápido na 0.6.9
 
 O botão **Aplicar** continua enviando os ajustes quando você confirma. A comunicação USB consulta as respostas com menos espera e reaproveita leituras de preparação dentro do mesmo comando. Em um AM8 B5 0.7.1, o comando de ruído caiu de **5,22 s para 1,32 s**; o tom padrão, de **5,82 s para 1,33 s**. São medições locais de uma aplicação por ajuste, incluindo verificação do aparelho, confirmação por leitura e atualização completa do estado.
@@ -49,6 +55,8 @@ A ilustração do microfone foi removida do painel Estúdio. As informações de
 | 🎚️ **EQ do microfone** | Dez filtros para sua voz: pico, graves/agudos shelf, passa-altas e passa-baixas; curva estimada e compensação de ganho. |
 | 🎧 **EQ dos fones** | Equalizador independente para amigos, músicas e jogos reproduzidos pelo AM8; dez filtros, ajustes de −6 a +6 dB e compensação de ganho. |
 | 🔊 **Ganho geral dos fones** | 0 a +18 dB no DSP, com botão para voltar a 0 dB; mantém a compensação dos filtros. |
+| ↔️ **Modo dos fones** | Estéreo ou soma mono no DAC nativo, com Aplicar, comparação e restauração. |
+| ℹ️ **Informações do AM8** | Canais, taxas e formatos, vazão PCM calculada, mixer Windows e clock reportado. |
 | 📊 **Compressor** | Uma faixa, com limiar, razão, ataque e liberação. |
 | 🎵 **Tom da voz** | Algoritmo padrão e Pro; Pro limitado a −3/+3 semitons nesta versão. |
 | 🧬 **Transformação Pro** | Controles independentes de altura e timbre. |
@@ -95,8 +103,8 @@ Os medidores usam uma **escala visual relativa**, sem calibração em dB. A resp
 
 **Requisitos:** Windows 10/11 x64, WebView2 e AM8 USB compatível.
 
-1. Abra a [Release 0.6.9](https://github.com/NightXXT/am8lab/releases/tag/v0.6.9).
-2. Baixe o [instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.6.9/AM8-Lab-Setup-v0.6.9.exe) e os [hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.6.9/SHA256SUMS.txt).
+1. Abra a [Release 0.7.0](https://github.com/NightXXT/am8lab/releases/tag/v0.7.0).
+2. Baixe o [instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.7.0/AM8-Lab-Setup-v0.7.0.exe) e os [hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.7.0/SHA256SUMS.txt).
 3. Confira o hash conforme [o guia de instalação](docs/INSTALL.md) e execute o setup.
 4. Conecte o AM8 por **USB** e abra o programa.
 
@@ -105,7 +113,7 @@ O setup instala para o usuário atual, cria atalhos e inclui desinstalador. Se o
 <details>
 <summary><strong>Prefere uma versão portátil?</strong></summary>
 
-Baixe `AM8-Lab-Portable-v0.6.9.zip` nas Releases, confira o hash, extraia a pasta e abra `AM8-Lab.exe`. Mantenha os arquivos de licença que acompanham o programa. WebView2 precisa estar instalado.
+Baixe `AM8-Lab-Portable-v0.7.0.zip` nas Releases, confira o hash, extraia a pasta e abra `AM8-Lab.exe`. Mantenha os arquivos de licença que acompanham o programa. WebView2 precisa estar instalado.
 
 </details>
 

@@ -5,10 +5,10 @@
 ![AM8 Lab — Native DSP controls for the FIFINE AM8](docs/assets/banner.svg)
 
 ![Windows 10/11 x64](https://img.shields.io/badge/Windows-10%2F11%20x64-0078D4?style=flat-square)
-![Experimental 0.6.9](https://img.shields.io/badge/version-0.6.9%20experimental-8B5CF6?style=flat-square)
+![Experimental 0.7.0](https://img.shields.io/badge/version-0.7.0%20experimental-8B5CF6?style=flat-square)
 [![MIT license](https://img.shields.io/badge/license-MIT-22C55E?style=flat-square)](LICENSE)
 
-**[Download Windows installer](https://github.com/NightXXT/am8lab/releases/download/v0.6.9/AM8-Lab-Setup-v0.6.9.exe)** · [Portable ZIP](https://github.com/NightXXT/am8lab/releases/download/v0.6.9/AM8-Lab-Portable-v0.6.9.zip) · [SHA-256 hashes](https://github.com/NightXXT/am8lab/releases/download/v0.6.9/SHA256SUMS.txt) · [Release 0.6.9](https://github.com/NightXXT/am8lab/releases/tag/v0.6.9)
+**[Download Windows installer](https://github.com/NightXXT/am8lab/releases/download/v0.7.0/AM8-Lab-Setup-v0.7.0.exe)** · [Portable ZIP](https://github.com/NightXXT/am8lab/releases/download/v0.7.0/AM8-Lab-Portable-v0.7.0.zip) · [SHA-256 hashes](https://github.com/NightXXT/am8lab/releases/download/v0.7.0/SHA256SUMS.txt) · [Release 0.7.0](https://github.com/NightXXT/am8lab/releases/tag/v0.7.0)
 
 Experimental, unofficial Windows USB controller for the FIFINE AM8's native DSP. Built with Rust + Tauri; the UI is in Portuguese. Voice effects and headphone playback EQ run on the AM8, without PC audio processing, a virtual microphone or firmware flashing.
 
@@ -27,6 +27,12 @@ Experimental, unofficial Windows USB controller for the FIFINE AM8's native DSP.
 
 For headphone EQ, select the AM8 playback device in Windows and connect headphones to its P2 output. Other Windows playback devices are not affected.
 
+### New in 0.7.0 · Headphone modes and AM8 information
+
+The headphone **Mono/Stereo** selector has its own Apply button, original comparison and restoration. Mono summing happens in the AM8 DAC. A 60-second test confirmed both tones in both ears and the return to stereo.
+
+The **Capacidades** page shows USB channels/rates, the Windows mix format, calculated PCM data rate and reported core clock. A voice measurement found a mono signal duplicated in both USB channels in the current path. Voice stereo remains under investigation. See [test methods and limitations](docs/NATIVE-MODES.md).
+
 ### Faster Apply in 0.6.9
 
 The **Aplicar** (Apply) button remains manual. USB replies are polled sooner, and preparation reads are reused within one command. On one B5 0.7.1 AM8, the noise command fell from **5.22 s to 1.32 s**, and standard pitch from **5.82 s to 1.33 s**. Each measurement covers one application, including compatibility verification, readback and the complete post-write snapshot. Journal persistence and restoration remain in place. More complex effects still take longer. See [methodology and limits](docs/PERFORMANCE.md).
@@ -37,7 +43,7 @@ The microphone illustration has been removed from the Studio panel. USB, filter 
 
 ## Features and compatibility
 
-Download `AM8-Lab-Setup-v0.6.9.exe` and `SHA256SUMS.txt` from this repository's Releases. Check the hash, install, connect the microphone and apply controls. Setup installs for the current user and checks WebView2; if missing, Microsoft's embedded bootstrapper needs internet to install the runtime. Binaries are not Authenticode-signed; a hash is not a trust guarantee.
+Download `AM8-Lab-Setup-v0.7.0.exe` and `SHA256SUMS.txt` from this repository's Releases. Check the hash, install, connect the microphone and apply controls. Setup installs for the current user and checks WebView2; if missing, Microsoft's embedded bootstrapper needs internet to install the runtime. Binaries are not Authenticode-signed; a hash is not a trust guarantee.
 
 Validated on Windows x64, USB 3142:A010 / MI_04, B5 0.7.1 / library2.43.2 / engine2.23.2 / HunXiang and one known graph fingerprint. Other revisions are refused. Hardware testing covered one physical unit; broad compatibility is not established.
 
