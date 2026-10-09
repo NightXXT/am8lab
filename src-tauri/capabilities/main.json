@@ -5,7 +5,7 @@
   "windows": ["main"],
   "permissions": [
     "core:event:allow-listen", "core:event:allow-unlisten",
-    "allow-inspect", "allow-apply-effect", "allow-compare-original", "allow-restore-all",
+    "allow-inspect", "allow-apply-effect", "allow-apply-headphone-mode", "allow-get-device-info", "allow-compare-original", "allow-restore-all",
     "allow-test-gain", "allow-smoke-mode", "allow-preview-mode", "allow-recovery-pending", "allow-finish-smoke",
     "allow-get-update-info", "allow-check-updates", "allow-open-releases", "allow-download-update"
   ]
