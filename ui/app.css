@@ -473,3 +473,49 @@ details[open]>.field { animation: pageIn 150ms ease-out; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* Native headphone channels and information read on request. */
+.headphone-mode-panel { display: grid; grid-template-columns: minmax(0,1fr) minmax(330px,1fr); gap: 32px; align-items: center; margin: 20px 0; background: linear-gradient(110deg,#201b29,var(--surface) 65%); }
+.headphone-mode-copy h2 { font-size: 18px; margin: 9px 0; }
+.headphone-mode-copy .subtle { max-width: 480px; margin: 0 0 12px; font-size: 11px; }
+.headphone-mode-current { color: var(--primary); font: 10px var(--mono); }
+.headphone-mode-controls .segmented { margin-bottom: 12px; }
+.headphone-mode-controls .segmented button { min-height: 35px; }
+.headphone-channel-diagram { display: flex; align-items: center; justify-content: center; gap: 11px; font: 10px var(--mono); color: #9f94ad; }
+.headphone-channel-diagram span { padding: 7px 12px; border: 1px solid #44354f; border-radius: 5px; background: #201928; }
+.headphone-channel-diagram i, .headphone-channel-diagram b { font-style: normal; font-weight: 400; color: #776682; }
+.headphone-mode-panel[data-status=active] .card-status { color: var(--success); }
+.headphone-mode-panel[data-status=prepared] .card-status { color: var(--primary); }
+.headphone-mode-panel[data-status=applying] .card-status { color: var(--amber); }
+.headphone-mode-panel[data-status=error] .card-status { color: var(--error); }
+.headphone-mode-panel .card-footer { flex-wrap: wrap; }
+.headphone-mode-panel .card-footer button { margin-left: auto; font-size: 10px; min-height: 33px; }
+.voice-mode-notice { display: flex; justify-content: space-between; align-items: flex-start; gap: 22px; margin-bottom: 20px; }
+.voice-mode-notice h2 { font-size: 14px; margin: 8px 0; }
+.voice-mode-notice .subtle { font-size: 11px; margin: 0; max-width: 680px; }
+.voice-mode-notice>.badge { flex: none; }
+.device-info-panel { margin-bottom: 22px; }
+.device-info-panel .panel-heading { flex-wrap: wrap; gap: 12px; }
+.device-info-status { margin: 0 0 16px; font-size: 11px; }
+.device-info-status.is-error { color: var(--amber); }
+.device-info-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 18px; }
+.device-info-group { border: 1px solid #3a3042; border-radius: 7px; padding: 17px; background: #17141c; min-width: 0; }
+.device-info-group h3 { font-size: 12px; font-weight: 600; color: #e3d7f1; margin: 0 0 15px; }
+.device-info-group dl { margin: 0; }
+.device-info-group dl>div { display: flex; flex-direction: column; gap: 5px; margin: 0 0 13px; }
+.device-info-group dt { font-size: 10px; color: #9d90aa; }
+.device-info-group dd { margin: 0; font-size: 11px; color: #e0d4ec; line-height: 1.65; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.device-info-group .subtle { font-size: 10px; line-height: 1.7; margin: 15px 0 0; color: #96879f; }
+.device-info-voice { border-top: 1px solid #392f41; margin-top: 18px; padding-top: 16px; }
+.device-info-voice .subtle { margin-top: 10px; }
+.device-info-scope { margin: 17px 0 0; font-size: 10px; color: #94859f; line-height: 1.7; }
+@media (max-width: 1140px) {
+ .headphone-mode-panel { grid-template-columns: minmax(0,1fr) minmax(300px,1fr); gap: 20px; }
+ .device-info-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+ .device-info-group:last-child { grid-column: 1/-1; }
+ .device-info-group:last-child dl { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+}
+@media (max-width: 1000px) {
+ .headphone-mode-panel { grid-template-columns: 1fr; gap: 18px; }
+ .headphone-mode-copy .subtle { max-width: none; }
+}

@@ -2,6 +2,11 @@
 const $=id=>document.getElementById(id), invoke=(name,args={})=>window.__TAURI__.core.invoke(name,args);
 const state={busy:false,connected:false,pending:false,snapshot:null,dirty:new Set(),smoke:false,lastError:null,view:"overview",applying:null,failedEffect:null};
 const updates={info:null,busy:'',native:false,restricted:true,notice:'',noticeError:false};
+const deviceInfo={info:null,busy:false,error:''};
+let headphoneModeDraft=null;
+const headphoneModes={stereo:'Estéreo',mono:'Mono'};
+const knownHeadphoneMode=mode=>Object.hasOwn(headphoneModes,mode);
+const deviceReady=()=>state.connected&&!state.busy&&!deviceInfo.busy&&!state.snapshot?.comparison&&!state.snapshot?.legacy_pending&&!state.smoke;
 const updateStatuses={
  idle:['Verifique quando quiser','A consulta só acontece ao clicar em Verificar atualizações.','↻'],
  available:['Nova versão disponível','Uma versão mais recente está disponível para Windows.','↓'],
@@ -95,10 +100,76 @@ function refreshModules(){
   card.querySelector('.card-status').textContent={applying:'Aguardando confirmação…',error:'Falha · reconecte e confira a sessão',prepared:'Alterações preparadas',unavailable:'Conecte o AM8',active:'Ativo confirmado',off:'Desativado no AM8'}[status];
   const hint=card.querySelector('.effect-conflict'),conflict=effectConflict(name);hint.textContent=conflict;hint.hidden=!conflict;
  }
- const count=[...state.dirty].filter(x=>x!=='playbackeq').length;
+ const count=[...state.dirty].filter(x=>!['playbackeq','headphone_mode'].includes(x)).length;
  $('draftSummary').textContent=count?count+' módulo'+(count===1?'':'s')+' com alterações preparadas':'Nenhuma alteração preparada';
 }
 function mark(name){state.dirty.add(name);refreshModules();controls();}
+function renderHeadphoneMode(){
+ const confirmed=state.connected?state.snapshot?.headphone_mode:null,dirty=state.dirty.has('headphone_mode');
+ $('headphoneModePanel').hidden=eqDestination!=='playbackeq';
+ for(const button of document.querySelectorAll('[data-headphone-mode]')){
+  const selected=button.dataset.headphoneMode===headphoneModeDraft;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));
+  button.disabled=!deviceReady()||!knownHeadphoneMode(confirmed);
+ }
+ const applying=state.applying==='headphone_mode',failed=state.failedEffect==='headphone_mode'&&state.lastError;
+ const status=applying?'applying':failed?'error':!state.connected?'unavailable':!knownHeadphoneMode(confirmed)?'unavailable':dirty?'prepared':'active';
+ $('headphoneModePanel').dataset.status=status;
+ $('headphoneModeCurrent').textContent=knownHeadphoneMode(confirmed)?headphoneModes[confirmed]+' no AM8':'Modo não confirmado';
+ $('headphoneModeStatus').textContent=applying?'Aguardando confirmação…':failed?'Falha · reconecte e confira a sessão':!state.connected?'Conecte o AM8':!knownHeadphoneMode(confirmed)?'Modo indisponível nesta leitura':dirty?'Alteração preparada · '+headphoneModes[headphoneModeDraft]:headphoneModes[confirmed]+' confirmado';
+ $('headphoneModeApply').disabled=!deviceReady()||!knownHeadphoneMode(confirmed)||!knownHeadphoneMode(headphoneModeDraft)||!dirty;
+ $('headphoneModeApply').textContent=applying?'Confirmando…':'Aplicar modo dos fones';
+ $('headphoneModeFlow').hidden=!knownHeadphoneMode(headphoneModeDraft);
+ $('headphoneModeFlow').innerHTML=headphoneModeDraft==='mono'?'<span>L + R</span><b>→</b><span>Dois ouvidos</span>':'<span>L → um ouvido</span><span>R → outro ouvido</span>';
+}
+function prepareHeadphoneMode(mode){
+ if(!deviceReady()||!knownHeadphoneMode(state.snapshot?.headphone_mode)||!knownHeadphoneMode(mode))return false;
+ headphoneModeDraft=mode;if(mode===state.snapshot.headphone_mode)state.dirty.delete('headphone_mode');else state.dirty.add('headphone_mode');controls();return true;
+}
+function infoNumber(value){return Number.isFinite(value)&&value>0?value.toLocaleString('pt-BR'):'—';}
+function infoRates(value){return Array.isArray(value)&&value.length&&value.every(x=>Number.isInteger(x)&&x>0)?value.map(x=>(x/1000).toLocaleString('pt-BR')+' kHz').join(' / '):'—';}
+function infoMix(info,prefix){
+ const rate=info?.['windows_'+prefix+'_sample_rate_hz'],channels=info?.['windows_'+prefix+'_channels'],bits=info?.['windows_'+prefix+'_mix_bits'];
+ if(!Number.isInteger(rate)||rate<=0||!Number.isInteger(channels)||channels<=0||!Number.isInteger(bits)||bits<=0)return 'Indisponível';
+ return (rate/1000).toLocaleString('pt-BR')+' kHz · '+channels+' canais · '+bits+' bits no mixer';
+}
+function infoBandwidth(info){
+ if(!Array.isArray(info?.usb_sample_rates_hz)||!info.usb_sample_rates_hz.length||!Array.isArray(info?.usb_transport_bits)||!info.usb_transport_bits.length||info.usb_capture_channels!==2||info.usb_playback_channels!==2)return '—';
+ const values=info.usb_sample_rates_hz.flatMap(rate=>info.usb_transport_bits.map(bits=>rate*bits*2/1000000));
+ if(values.some(x=>!Number.isFinite(x)||x<=0))return '—';
+ const format=x=>x.toLocaleString('pt-BR',{maximumFractionDigits:4});
+ return format(Math.min(...values))+'–'+format(Math.max(...values))+' Mb/s por caminho';
+}
+function renderDeviceInfo(){
+ const info=state.connected?deviceInfo.info:null;
+ $('deviceInfoRefresh').disabled=!window.__TAURI__||!state.connected||state.busy||deviceInfo.busy||state.smoke;
+ $('deviceInfoRefresh').textContent=deviceInfo.busy?'Lendo…':'Atualizar informações';
+ $('deviceInfoStatus').textContent=deviceInfo.busy?'Consultando o AM8 e os formatos do Windows…':deviceInfo.error?deviceInfo.error:!state.connected?'Conecte o AM8 para consultar as informações.':info?'Informações consultadas nesta sessão.':'Abra esta área para consultar o aparelho.';
+ $('deviceInfoStatus').classList.toggle('is-error',!!deviceInfo.error);
+ $('deviceInfoFirmware').textContent=typeof info?.firmware==='string'?info.firmware:'—';
+ $('deviceInfoUsb').textContent=info&&typeof info.usb_speed==='string'&&typeof info.usb_protocol==='string'?info.usb_speed+' · '+info.usb_protocol:'—';
+ $('deviceInfoChannels').textContent=info&&Number.isInteger(info.usb_capture_channels)&&Number.isInteger(info.usb_playback_channels)?info.usb_capture_channels+' captura / '+info.usb_playback_channels+' reprodução':'—';
+ $('deviceInfoRates').textContent=infoRates(info?.usb_sample_rates_hz);
+ $('deviceInfoTransportBits').textContent=Array.isArray(info?.usb_transport_bits)&&info.usb_transport_bits.every(x=>Number.isInteger(x)&&x>0)?info.usb_transport_bits.join(' / ')+' bits no USB':'—';
+ $('deviceInfoBandwidth').textContent=infoBandwidth(info);
+ $('deviceInfoClock').textContent=Number.isFinite(info?.reported_core_clock_mhz)&&info.reported_core_clock_mhz>0?infoNumber(info.reported_core_clock_mhz)+' MHz reportados':'—';
+ $('deviceInfoInternalRate').textContent=Number.isFinite(info?.internal_sample_rate_hz_inferred)&&info.internal_sample_rate_hz_inferred>0?(info.internal_sample_rate_hz_inferred/1000).toLocaleString('pt-BR')+' kHz · inferido':'—';
+ $('deviceInfoFrame').textContent=Number.isInteger(info?.internal_frame_samples_inferred)&&info.internal_frame_samples_inferred>0?infoNumber(info.internal_frame_samples_inferred)+' amostras · inferido':'—';
+ $('deviceInfoCaptureMix').textContent=infoMix(info,'capture');$('deviceInfoPlaybackMix').textContent=infoMix(info,'playback');
+ $('deviceInfoHeadsetMode').textContent=knownHeadphoneMode(info?.headset_mode)?headphoneModes[info.headset_mode]:'—';
+}
+async function readDeviceInfo(){
+ if(!window.__TAURI__||!state.connected||state.busy||deviceInfo.busy||state.smoke)return false;
+ deviceInfo.busy=true;deviceInfo.error='';controls();
+ try{
+  const info=await invoke('get_device_info');
+  if(!info||typeof info!=='object'||Array.isArray(info)||typeof info.firmware!=='string')throw new Error('Resposta de informações inválida.');
+  deviceInfo.info=info;return true;
+ }catch{deviceInfo.info=null;deviceInfo.error='Não foi possível ler as informações. Tente atualizar novamente.';return false;}
+ finally{deviceInfo.busy=false;controls();}
+}
+$('deviceInfoRefresh').onclick=()=>readDeviceInfo();
+document.querySelectorAll('[data-headphone-mode]').forEach(button=>button.onclick=()=>prepareHeadphoneMode(button.dataset.headphoneMode));
+$('headphoneModeApply').onclick=()=>{if(deviceReady()&&state.dirty.has('headphone_mode')&&knownHeadphoneMode(headphoneModeDraft)&&knownHeadphoneMode(state.snapshot?.headphone_mode))operation('apply_headphone_mode',{mode:headphoneModeDraft},false,'headphone_mode');};
 function renderCards(){
  $('effectCards').innerHTML=effectOrder.map((name,index)=>{
   const title=titles[name];
@@ -120,30 +191,34 @@ function updateNavigation(){
 }
 function switchTab(tab,destination){
  if(!['overview','effects','eq','profiles','capabilities'].includes(tab))return;
- if(destination&&destination!==eqDestination&&(state.busy||state.snapshot?.comparison))return;
+ if(destination&&destination!==eqDestination&&(state.busy||deviceInfo.busy||state.snapshot?.comparison))return;
  state.view=tab;if(destination)chooseEq(destination);
  document.querySelectorAll('.tab-content').forEach(x=>x.classList.toggle('active',x.id==='tab-'+tab));
  updateNavigation();$('mainContentArea').scrollTop=0;
+ if(tab==='capabilities')readDeviceInfo();
 }
 document.querySelectorAll('[data-tab]').forEach(button=>button.onclick=()=>switchTab(button.dataset.tab,button.dataset.destination));
 function controls(){
- const ready=state.connected&&!state.busy&&!state.snapshot?.comparison&&!state.snapshot?.legacy_pending&&!state.smoke;
+ const ready=deviceReady();
  document.querySelectorAll('[data-effect] input,[data-effect] button,#eqFilters input,#eqFilters select,#eqQuick input,#eqEnabled,#eqApply,#eqHighpass,#eqLowpass,#eqFlat,#eqOutputGain,#eqOutputGainReset,#gainTest,#gainReduction').forEach(x=>x.disabled=!ready);
- document.querySelectorAll('[data-eq-destination]').forEach(x=>x.disabled=state.busy||!!state.snapshot?.comparison);
- $('restore').disabled=state.busy||!state.pending||state.smoke;
- $('btnCompareOriginal').disabled=state.busy||!state.connected||!state.pending||!!state.snapshot?.legacy_pending||state.smoke;
- for(const id of ['reconnect','reconnectBanner'])$(id).disabled=state.busy;
+ document.querySelectorAll('[data-eq-destination]').forEach(x=>x.disabled=state.busy||deviceInfo.busy||!!state.snapshot?.comparison);
+ $('restore').disabled=state.busy||deviceInfo.busy||!state.pending||state.smoke;
+ $('btnCompareOriginal').disabled=state.busy||deviceInfo.busy||!state.connected||!state.pending||!!state.snapshot?.legacy_pending||state.smoke;
+ for(const id of ['reconnect','reconnectBanner'])$(id).disabled=state.busy||deviceInfo.busy;
  $('compareText').textContent=state.snapshot?.comparison?'Voltar aos efeitos':'Comparar com original';
  $('bannerCompare').classList.toggle('hidden',!state.snapshot?.comparison);
  $('bannerDisconnected').classList.toggle('hidden',state.connected||state.busy);
  $('connLabel').textContent=state.busy?'Verificando / aplicando…':state.connected?'AM8 conectado por USB':'AM8 desconectado';
  $('connDot').style.background=state.connected?'#10b981':'#5a6172';
- document.querySelectorAll('[data-destination]').forEach(x=>x.disabled=state.busy||!!state.snapshot?.comparison);
+ document.querySelectorAll('[data-destination]').forEach(x=>x.disabled=state.busy||deviceInfo.busy||!!state.snapshot?.comparison);
  document.querySelectorAll('[data-effect]').forEach(card=>{if(effectConflict(card.dataset.effect))card.querySelector('[data-apply]').disabled=true;});refreshModules();
  if(!state.connected){$('firmware').textContent='Conecte o AM8 por USB';$('currentGainBadge').textContent='—';}
+ renderHeadphoneMode();renderDeviceInfo();
 }
 function snapshot(data,reset=false){
  state.snapshot=data;state.connected=true;state.pending=data.recovery_pending;if(reset)state.dirty.clear();
+ if(!state.dirty.has('headphone_mode'))headphoneModeDraft=knownHeadphoneMode(data.headphone_mode)?data.headphone_mode:null;
+ if(deviceInfo.info)deviceInfo.info={...deviceInfo.info,headset_mode:data.headphone_mode};
  const e=data.effects;
  for(const name of Object.keys(titles)){
   if(state.dirty.has(name))continue;const d=drafts[name];
@@ -161,10 +236,10 @@ function snapshot(data,reset=false){
  renderCards();renderEq();controls();
 }
 async function operation(name,args={},reset=false,applied=null,automatic=false){
- if(state.busy)return;if(!automatic)state.lastError=null;state.busy=true;state.applying=applied;if(!automatic)state.failedEffect=null;controls();message('Aguardando confirmação do AM8…');
- try{const data=await invoke(name,args);if(applied)state.dirty.delete(applied);snapshot(data,reset);if(automatic&&state.lastError)message(state.lastError,true);else message(name==='restore_all'?'Sessão original restaurada.':name==='inspect'?'AM8 conectado e verificado.':'Ajuste confirmado no AM8.');}
+ if(state.busy||deviceInfo.busy)return;if(!automatic)state.lastError=null;state.busy=true;state.applying=applied;if(!automatic)state.failedEffect=null;controls();message('Aguardando confirmação do AM8…');
+ try{const data=await invoke(name,args);if(name==='apply_headphone_mode'&&data?.headphone_mode!==args.mode)throw new Error('O AM8 não confirmou o modo dos fones solicitado.');if(applied)state.dirty.delete(applied);snapshot(data,reset);if(automatic&&state.lastError)message(state.lastError,true);else message(name==='restore_all'?'Sessão original restaurada.':name==='inspect'?'AM8 conectado e verificado.':'Ajuste confirmado no AM8.');}
  catch(error){state.failedEffect=applied;state.connected=false;try{state.pending=await invoke('recovery_pending');}catch{}state.lastError=String(error)+(state.pending?' Reconecte e restaure a sessão.':'');message(state.lastError,true);}
- finally{state.busy=false;state.applying=null;controls();}
+ finally{state.busy=false;state.applying=null;controls();if(name==='inspect'&&state.connected&&state.view==='capabilities')readDeviceInfo();}
 }
 $('btnCompareOriginal').onclick=() =>operation('compare_original');$('bannerCompare').querySelector('button').onclick=()=>operation('compare_original');
 $('restore').onclick=()=>operation('restore_all',{},true);for(const id of ['reconnect','reconnectBanner'])$(id).onclick=()=>operation('inspect');
@@ -178,6 +253,7 @@ function renderEq(){
  $('eqValidation').hidden=!fones;$('eqDestinationHint').textContent=fones?'Corte de agudos confirmado neste AM8. As combinações usam limites conservadores. Escolha “Alto-falantes (fifine Microphone)” como saída do áudio. A conexão física do P2 não é detectada.':'Este EQ atua na voz enviada por USB. Os ajustes dos fones são independentes.';
  $('eqApply').textContent=fones?'Aplicar EQ dos fones':'Aplicar EQ do microfone';$('eqEnabled').setAttribute('aria-label',fones?'Ativar EQ dos fones':'Ativar EQ do microfone');
  $('eqOutputGainPanel').hidden=!fones;if(fones){$('eqOutputGain').value=eq.outputGain;$('eqOutputGainValue').textContent=display(eq.outputGain,'dB');}
+ renderHeadphoneMode();
  $('eqEnabled').checked=eq.enabled;for(const [i,id] of ['quickBass','quickMid','quickTreble'].entries()){$(id).value=eq.filters[i].gain;$(id+'Val').textContent=display(eq.filters[i].gain,'dB');}$('eqFilters').innerHTML='<div class="eq-row eq-heading"><span>Filtro</span><span>Tipo</span><span>Frequência · Hz</span><span>Ganho · dB</span><span>Q</span></div>'+eq.filters.map((f,i)=>`<div class="eq-row"><label class="switch-label"><input type="checkbox" data-index="${i}" data-eq="enabled" ${f.enabled?'checked':''}> ${i+1}</label><select data-index="${i}" data-eq="type" aria-label="Tipo do filtro ${i+1}">${['Pico','Graves shelf','Agudos shelf','Passa-baixas','Passa-altas'].map((n,j)=>`<option value="${j}" ${f.type===j?'selected':''}>${n}</option>`).join('')}</select><input data-index="${i}" data-eq="frequency" type="number" min="20" max="16000" step="1" value="${f.frequency}" aria-label="Frequência do filtro ${i+1}"><input data-index="${i}" data-eq="gain" type="number" min="-6" max="6" step="1" value="${f.gain}" aria-label="Ganho do filtro ${i+1}"><input data-index="${i}" data-eq="q" type="number" min="0.25" max="8" step="0.01" value="${(f.q/1024).toFixed(2)}" aria-label="Q do filtro ${i+1}"></div>`).join('');
   $('eqFilters').querySelectorAll('[data-eq]').forEach(input=>input.onchange=()=>{const key=input.dataset.eq;let v=key==='enabled'?Number(input.checked):Number(input.value);if(key==='q')v=Math.round(v*1024);eq.filters[Number(input.dataset.index)][key]=v;markEq();drawCurve();});
  $('eqStatus').textContent=state.dirty.has(eqDestination)?'Alterações preparadas':state.snapshot?.effects?.[fones?'playback_eq':'eq']?'Valores confirmados':'Prepare e aplique';drawCurve();
@@ -279,21 +355,36 @@ async function start(){
   for(const outputGain of [-1,19,0.5,'3',null,undefined,NaN,Infinity])passed=passed&&!profileValid({...sample,playbackEq:{...sample.playbackEq,outputGain}});
   for(const outputGain of [0,18])passed=passed&&profileValid({...sample,playbackEq:{...sample.playbackEq,outputGain}});
   passed=passed&&!profileValid({...sample,eq:{...sample.eq,outputGain:0}});
-  const originalEqualizers=structuredClone(equalizers),originalDestination=eqDestination,originalDirty=new Set(state.dirty),originalDrafts=structuredClone(drafts),originalSnapshot=state.snapshot,originalConnected=state.connected,originalPending=state.pending;state.dirty.clear();
+  const originalEqualizers=structuredClone(equalizers),originalDestination=eqDestination,originalDirty=new Set(state.dirty),originalDrafts=structuredClone(drafts),originalSnapshot=state.snapshot,originalConnected=state.connected,originalPending=state.pending,originalHeadphoneModeDraft=headphoneModeDraft,originalDeviceInfo={...deviceInfo};state.dirty.clear();
   $('eqDestinationMic').click();$('quickBass').value='-2';$('quickBass').oninput();const preparedMic=JSON.stringify(equalizers.eq);
   passed=passed&&eqRequest().effect==='eq'&&eqRequest().values.f0_gain===-2&&Object.keys(eqRequest().values).length===50&&!Object.hasOwn(eqRequest().values,'output_gain')&&state.dirty.has('eq')&&!state.dirty.has('playbackeq');
   $('eqDestinationFones').click();$('eqOutputGain').value='12';$('eqOutputGain').oninput();$('quickBass').value='3';$('quickBass').oninput();const preparedPlayback=JSON.stringify(equalizers.playbackeq);
-  passed=passed&&eqRequest().effect==='playbackeq'&&eqRequest().values.f0_gain===3&&Object.keys(eqRequest().values).length===51&&eqRequest().values.output_gain===12&&$('eqCompensationValue').textContent==='-3 dB'&&$('eqPreGainValue').textContent==='+9 dB'&&JSON.stringify(equalizers.eq)===preparedMic&&state.dirty.has('playbackeq')&&!$('eqValidation').hidden&&!$('eqOutputGainPanel').hidden;
-  $('eqDestinationMic').click();passed=passed&&$('quickBass').value==='-2'&&eqRequest().effect==='eq'&&JSON.stringify(equalizers.playbackeq)===preparedPlayback&&$('eqValidation').hidden&&$('eqOutputGainPanel').hidden;
+  passed=passed&&eqRequest().effect==='playbackeq'&&eqRequest().values.f0_gain===3&&Object.keys(eqRequest().values).length===51&&eqRequest().values.output_gain===12&&$('eqCompensationValue').textContent==='-3 dB'&&$('eqPreGainValue').textContent==='+9 dB'&&JSON.stringify(equalizers.eq)===preparedMic&&state.dirty.has('playbackeq')&&!$('eqValidation').hidden&&!$('eqOutputGainPanel').hidden&&!$('headphoneModePanel').hidden;
+  $('eqDestinationMic').click();passed=passed&&$('quickBass').value==='-2'&&eqRequest().effect==='eq'&&JSON.stringify(equalizers.playbackeq)===preparedPlayback&&$('eqValidation').hidden&&$('eqOutputGainPanel').hidden&&$('headphoneModePanel').hidden;
   loadProfile(oldSample);passed=passed&&JSON.stringify(equalizers.playbackeq)===preparedPlayback;
   loadProfile(oldPlaybackSample);passed=passed&&equalizers.playbackeq.outputGain===0;
   loadProfile(sample);passed=passed&&JSON.stringify(equalizers.eq)===JSON.stringify(sample.eq)&&JSON.stringify(equalizers.playbackeq)===JSON.stringify(sample.playbackEq);
   chooseEq('playbackeq');$('eqOutputGain').value='18';$('eqOutputGain').oninput();$('eqFlat').onclick();passed=passed&&equalizers.playbackeq.outputGain===18&&equalizers.playbackeq.enabled&&eqRequest().values.output_gain===18&&eqPreGain(selectedEq())===18;
   $('eqOutputGainReset').onclick();passed=passed&&equalizers.playbackeq.outputGain===0&&$('eqOutputGain').value==='0'&&eqRequest().values.output_gain===0;
   const nativeEq=Array.from({length:53},(_,i)=>i>=3&&((i-3)%5===2)?200:i>=3&&((i-3)%5===3)?724:0),nativePlayback=[...nativeEq];nativePlayback[0]=1;nativePlayback[1]=10*256;nativePlayback[3]=1;nativePlayback[7]=2*256;nativePlayback[8]=1;nativePlayback[9]=4;nativePlayback[12]=6*256;
-  snapshot({firmware:'TEST',gain_db:0,recovery_pending:true,effects:{noise:[0,-4000,4,10,200],pitch:[0,0],pitch_pro:[0,0],voice_pro:[0,100,100],reverb_native:[0,0,60,0,60,50],plate_native:[0,0,0,2500,0,40,5000],wet_route:[0,0,-600],feedback_fine:[0],compressor:Array(23).fill(0),eq:nativeEq,playback_eq:nativePlayback}},true);
+  snapshot({firmware:'TEST',gain_db:0,recovery_pending:true,headphone_mode:'stereo',effects:{noise:[0,-4000,4,10,200],pitch:[0,0],pitch_pro:[0,0],voice_pro:[0,100,100],reverb_native:[0,0,60,0,60,50],plate_native:[0,0,0,2500,0,40,5000],wet_route:[0,0,-600],feedback_fine:[0],compressor:Array(23).fill(0),eq:nativeEq,playback_eq:nativePlayback}},true);
   passed=passed&&equalizers.playbackeq.outputGain===12&&eqPreGain(equalizers.playbackeq)===10&&$('eqOutputGain').value==='12'&&$('eqPreGainValue').textContent==='+10 dB'&&Object.keys(equalizers.eq).length===2;
-  for(const name of Object.keys(titles))drafts[name]=originalDrafts[name];Object.assign(equalizers,originalEqualizers);state.dirty=originalDirty;state.snapshot=originalSnapshot;state.connected=originalConnected;state.pending=originalPending;chooseEq(originalDestination);renderCards();controls();
+  // Pure interface state checks: selecting a mode prepares it without any invoke.
+  passed=passed&&$('headphoneModeApply').disabled&&!prepareHeadphoneMode('mono');
+  state.smoke=false;controls();passed=passed&&headphoneModeDraft==='stereo'&&$('headphoneModeApply').disabled&&prepareHeadphoneMode('mono')&&state.dirty.has('headphone_mode')&&!$('headphoneModeApply').disabled&&state.snapshot.headphone_mode==='stereo'&&$('headphoneModeCurrent').textContent==='Estéreo no AM8'&&$('headphoneModeStatus').textContent==='Alteração preparada · Mono';
+  snapshot({...state.snapshot});passed=passed&&headphoneModeDraft==='mono'&&state.dirty.has('headphone_mode');
+  passed=passed&&!prepareHeadphoneMode('swap')&&!prepareHeadphoneMode(null)&&headphoneModeDraft==='mono';
+  state.snapshot.comparison=true;controls();passed=passed&&$('headphoneModeApply').disabled&&!prepareHeadphoneMode('stereo');state.snapshot.comparison=false;
+  state.busy=true;controls();passed=passed&&$('headphoneModeApply').disabled&&!prepareHeadphoneMode('stereo');state.busy=false;
+  state.connected=false;controls();passed=passed&&$('headphoneModeApply').disabled&&!prepareHeadphoneMode('stereo')&&$('headphoneModeCurrent').textContent==='Modo não confirmado';state.connected=true;
+  state.snapshot.headphone_mode='other';controls();passed=passed&&$('headphoneModeApply').disabled&&!prepareHeadphoneMode('stereo');
+  state.snapshot.headphone_mode='stereo';state.dirty.delete('headphone_mode');snapshot({...state.snapshot,headphone_mode:'mono'});passed=passed&&headphoneModeDraft==='mono'&&$('headphoneModeStatus').textContent==='Mono confirmado'&&$('headphoneModeApply').disabled;
+  state.smoke=true;
+  const infoSample={firmware:'<img src=x onerror="alert(1)">',usb_capture_channels:2,usb_playback_channels:2,usb_sample_rates_hz:[44100,48000],usb_transport_bits:[16,24],usb_speed:'Full Speed',usb_protocol:'UAC 1.0',reported_core_clock_mhz:240,internal_sample_rate_hz_inferred:44100,internal_frame_samples_inferred:256,windows_capture_sample_rate_hz:48000,windows_capture_channels:2,windows_capture_mix_bits:32,windows_playback_sample_rate_hz:48000,windows_playback_channels:2,windows_playback_mix_bits:32,headset_mode:'mono',voice_mode_status:'investigating'};
+  deviceInfo.info=infoSample;renderDeviceInfo();passed=passed&&$('deviceInfoFirmware').textContent===infoSample.firmware&&!$('deviceInfoFirmware').querySelector('img')&&$('deviceInfoClock').textContent==='240 MHz reportados'&&$('deviceInfoInternalRate').textContent==='44,1 kHz · inferido'&&$('deviceInfoBandwidth').textContent==='1,4112–2,304 Mb/s por caminho'&&$('deviceInfoCaptureMix').textContent==='48 kHz · 2 canais · 32 bits no mixer'&&$('deviceInfoHeadsetMode').textContent==='Mono'&&$('deviceInfoRefresh').disabled;
+  deviceInfo.info={firmware:'TEST'};renderDeviceInfo();passed=passed&&$('deviceInfoClock').textContent==='—'&&$('deviceInfoRates').textContent==='—'&&$('deviceInfoBandwidth').textContent==='—'&&$('deviceInfoCaptureMix').textContent==='Indisponível';
+  deviceInfo.info=null;deviceInfo.busy=true;renderDeviceInfo();passed=passed&&$('deviceInfoRefresh').disabled&&$('deviceInfoRefresh').textContent==='Lendo…';Object.assign(deviceInfo,originalDeviceInfo);
+  for(const name of Object.keys(titles))drafts[name]=originalDrafts[name];Object.assign(equalizers,originalEqualizers);state.dirty=originalDirty;state.snapshot=originalSnapshot;state.connected=originalConnected;state.pending=originalPending;headphoneModeDraft=originalHeadphoneModeDraft;chooseEq(originalDestination);renderCards();controls();
   const originalProfiles=profiles;profiles=[null,{...sample,name:'<img src=x onerror="alert(1)">'}];renderProfiles();
   passed=passed&&profiles.length===1&&$('profileList').querySelector('strong').textContent===profiles[0].name&&!$('profileList').querySelector('img');profiles=originalProfiles;renderProfiles();
   for(const tab of ['effects','eq','profiles','capabilities','overview']){$('nav-tab-'+tab).click();passed=passed&&$('tab-'+tab).classList.contains('active');}
