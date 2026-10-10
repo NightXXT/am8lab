@@ -121,7 +121,7 @@ impl Session {
         let gain = read_block(t, Block::MicGain)?;
         let legacy_active = effects[&Block::Autotune][0] != 0 || effects[&Block::Voice][0] != 0 || effects[&Block::AutoRoute][1] != 1;
         let headphone_mode = protocol::read_dac_mode(t).ok().map(|mode| if mode == 0 { "stereo" } else { "mono" }.into());
-        Ok(Snapshot { device: "FIFINE AM8 USB • 3142:A010", firmware: "B5 0.7.1", serial: t.serial().into(), effects,
+        Ok(Snapshot { device: "FIFINE AM8 USB • 3142:A010", firmware: t.firmware(), serial: t.serial().into(), effects,
             gain_db: f64::from(gain[2]) / 100.0, recovery_pending: self.pending(), comparison: self.comparison.is_some(),
             legacy_pending: self.legacy_pending() || legacy_active, headphone_mode })
     }
@@ -367,8 +367,9 @@ mod tests {
     use super::*;
     struct Fake { words: Blocks, preset: Vec<i16>, fail: Option<(Block, usize, i16)>, journal: PathBuf, serial: String, lose: bool, writes: usize,
         written_blocks: Vec<Block>, queried_blocks: Vec<Block>, external_on_write: Option<(Block, Vec<i16>)>,
-        dac: [u16; 14], dac_writes: Vec<u16>, dac_fail_once: bool, dac_ignore_once: bool, dac_corrupt_once: bool, guard_calls: usize }
+        dac: [u16; 14], dac_writes: Vec<u16>, dac_fail_once: bool, dac_ignore_once: bool, dac_corrupt_once: bool, guard_calls: usize, firmware: &'static str }
     impl Transport for Fake {
+        fn firmware(&self) -> &'static str { self.firmware }
         fn guard(&mut self) -> Result<()> { self.guard_calls += 1; if self.lose { Err("disconnected".into()) } else { Ok(()) } }
         fn serial(&self) -> &str { &self.serial }
         fn wait(&self, _: u64) {}
@@ -428,10 +429,14 @@ mod tests {
         (session, Fake { words, preset, fail: None, journal: path, serial: "TEST-AM8-001".into(), lose: false, writes: 0, written_blocks: vec![],
             queried_blocks: vec![], external_on_write: None,
             dac: [3,7,0,4095,4095,0,3,0,0,0,0,5,0,0], dac_writes: vec![],
-            dac_fail_once: false, dac_ignore_once: false, dac_corrupt_once: false, guard_calls: 0 })
+            dac_fail_once: false, dac_ignore_once: false, dac_corrupt_once: false, guard_calls: 0, firmware: "B5 0.7.1" })
     }
     impl Drop for Fake { fn drop(&mut self) { let _ = fs::remove_file(&self.journal); } }
     fn vals(items: &[(&str, i32)]) -> BTreeMap<String, i32> { items.iter().map(|(k,v)| ((*k).into(), *v)).collect() }
+    #[test] fn snapshot_preserves_the_actual_supported_firmware() {
+        let (s,mut t)=setup();t.firmware="B5 0.7.3";
+        assert_eq!(s.inspect(&mut t).unwrap().firmware,"B5 0.7.3");assert_eq!(t.writes,0);
+    }
     #[test] fn headphone_mode_only_changes_the_validated_dac_field_and_recovers_after_restart() {
         let (mut s, mut t) = setup(); let original = t.words.clone(); let dac = t.dac;
         let snapshot = s.apply_headphone_mode(&mut t, "mono").unwrap();

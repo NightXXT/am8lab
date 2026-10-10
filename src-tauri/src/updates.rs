@@ -1,4 +1,4 @@
-//! A manual, read-only release check. Installer execution stays with the user.
+//! Manual release discovery. Signed download and installation live in in_app_updates.
 use crate::protocol::Result;
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}};
@@ -16,6 +16,8 @@ pub enum UpdateStatus { Idle, Available, Current, Ahead, NoRelease, Unavailable,
 
 #[derive(Clone, Debug, Serialize)]
 pub struct UpdateInfo {
+    pub direct_update_ready: bool,
+    pub downloaded: bool,
     pub current_version: String,
     pub repository_url: String,
     pub releases_url: String,
@@ -36,6 +38,7 @@ pub struct UpdateInfo {
 impl UpdateInfo {
     fn idle(current: &str) -> Self {
         Self {
+            direct_update_ready: false, downloaded: false,
             current_version: current.into(), repository_url: REPOSITORY_URL.into(),
             releases_url: RELEASES_URL.into(), status: UpdateStatus::Idle,
             latest_version: None, download_url: None, download_name: None, download_size: None,
@@ -105,11 +108,22 @@ impl Updates {
     }
 
     /// No URL supplied by JavaScript is accepted here.
-    pub fn download(&self) -> Result<()> {
+    pub fn download_destination(&self) -> Result<String> {
         if self.checking.load(Ordering::SeqCst) { return Err("Aguarde a consulta de atualizações terminar antes de baixar.".into()); }
         let info = self.info()?;
         let url = permitted_download(&info)?;
-        open_browser(&url)
+        Ok(url)
+    }
+
+    pub fn set_direct_state(&self, ready: bool, downloaded: bool) -> Result<UpdateInfo> {
+        let mut info = self.cached.lock().map_err(|_| "Estado das atualizações indisponível")?;
+        info.direct_update_ready = ready; info.downloaded = ready && downloaded; info.error = None;
+        Ok(info.clone())
+    }
+    pub fn set_direct_error(&self, error: String) -> Result<()> {
+        let mut info = self.cached.lock().map_err(|_| "Estado das atualizações indisponível")?;
+        info.direct_update_ready = false; info.downloaded = false; info.error = Some(error);
+        Ok(())
     }
 }
 
@@ -207,7 +221,7 @@ pub fn select_release(bytes: &[u8], current: &str) -> Result<UpdateInfo> {
     Ok(info)
 }
 
-fn permitted_download(info: &UpdateInfo) -> Result<String> {
+pub(crate) fn permitted_download(info: &UpdateInfo) -> Result<String> {
     if info.status != UpdateStatus::Available { return Err("Consulte as atualizações e encontre uma versão mais nova antes de baixar.".into()); }
     let release = info.release_url.as_deref().ok_or("Versão publicada indisponível")?;
     let tag = release.strip_prefix(&format!("{RELEASES_URL}/tag/")).ok_or("Destino da versão inválido")?;
@@ -405,7 +419,7 @@ mod tests {
         let updates = Updates::new();
         *updates.cached.lock().unwrap() = choose(vec![release("v0.6.7", "0.6.7")], "0.6.6");
         updates.checking.store(true, Ordering::SeqCst);
-        assert!(updates.download().unwrap_err().contains("Aguarde"));
+        assert!(updates.download_destination().unwrap_err().contains("Aguarde"));
         assert!(updates.check().unwrap_err().contains("em andamento"));
         assert_eq!(updates.info().unwrap().status, UpdateStatus::Error);
         assert!(updates.info().unwrap().download_url.is_none());

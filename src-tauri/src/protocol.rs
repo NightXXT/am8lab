@@ -96,6 +96,8 @@ pub trait Transport {
     }
     fn guard(&mut self) -> Result<()>;
     fn serial(&self) -> &str;
+    /// Label established by the most recent successful full guard.
+    fn firmware(&self) -> &'static str;
     fn wait(&self, ms: u64) { thread::sleep(Duration::from_millis(ms)); }
 }
 
@@ -260,6 +262,7 @@ pub fn target(effect: Effect, enabled: bool, values: &BTreeMap<String, i32>, bef
 mod tests {
     struct DacFake { response: Vec<u8>, written: Vec<u16> }
     impl Transport for DacFake {
+        fn firmware(&self) -> &'static str { "B5 0.7.1" }
         fn query(&mut self, op: u8, payload: &[u8]) -> Result<Vec<u8>> { assert_eq!(op, 0x09); assert!(payload.is_empty()); Ok(self.response.clone()) }
         fn write_word(&mut self, _: Block, _: usize, _: i16) -> Result<()> { panic!("effect write forbidden in DAC test") }
         fn write_dac_mode(&mut self, mode: u16) -> Result<()> { self.written.push(mode); self.response[15..17].copy_from_slice(&mode.to_le_bytes()); Ok(()) }

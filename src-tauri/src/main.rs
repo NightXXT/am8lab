@@ -4,9 +4,10 @@ use std::{collections::BTreeMap, sync::{Arc, Mutex, atomic::{AtomicBool, Orderin
 use tauri::{Emitter, Manager};
 use am8_lab::protocol::Transport;
 use am8_lab::updates::{UpdateInfo, Updates};
+use am8_lab::in_app_updates::{UpdateFlow, restore_then_install};
 
 #[derive(Clone)]
-struct Shared { session: Arc<Mutex<Session>>, closing: Arc<AtomicBool>, updates: Arc<Updates> }
+struct Shared { session: Arc<Mutex<Session>>, closing: Arc<AtomicBool>, updates: Arc<Updates>, update_flow: Arc<UpdateFlow> }
 
 async fn operation(state: Shared, job: impl FnOnce(&mut Session, &mut HidDevice) -> Result<Snapshot> + Send + 'static) -> Result<Snapshot> {
     if smoke_mode() || preview_mode() { return Err("Prévia da interface sem acesso USB".into()); }
@@ -69,15 +70,15 @@ fn finish_smoke(app: tauri::AppHandle, passed: bool) { if smoke_mode() { app.exi
 fn get_update_info(state: tauri::State<'_, Shared>) -> Result<UpdateInfo> { state.updates.info() }
 
 fn allow_update_operation() -> Result<()> {
-    if smoke_mode() || preview_mode() { return Err("Prévia da interface sem consulta de rede ou abertura do navegador".into()); }
+    if smoke_mode() || preview_mode() { return Err("Prévia da interface sem rede, download ou instalação".into()); }
     Ok(())
 }
 
 #[tauri::command]
-async fn check_updates(state: tauri::State<'_, Shared>) -> Result<UpdateInfo> {
+async fn check_updates(app: tauri::AppHandle, state: tauri::State<'_, Shared>) -> Result<UpdateInfo> {
     allow_update_operation()?;
-    let updates = state.updates.clone();
-    tauri::async_runtime::spawn_blocking(move || updates.check()).await.map_err(|e| e.to_string())?
+    if state.closing.load(Ordering::SeqCst) { return Err("O aplicativo está fechando".into()); }
+    state.update_flow.check(app, state.updates.clone()).await
 }
 
 #[tauri::command]
@@ -87,10 +88,33 @@ async fn open_releases() -> Result<()> {
 }
 
 #[tauri::command]
-async fn download_update(state: tauri::State<'_, Shared>) -> Result<()> {
+async fn download_update(app: tauri::AppHandle, state: tauri::State<'_, Shared>) -> Result<UpdateInfo> {
     allow_update_operation()?;
-    let updates = state.updates.clone();
-    tauri::async_runtime::spawn_blocking(move || updates.download()).await.map_err(|e| e.to_string())?
+    if state.closing.load(Ordering::SeqCst) { return Err("O aplicativo está fechando".into()); }
+    state.update_flow.download(app, state.updates.clone()).await
+}
+
+#[tauri::command]
+async fn install_update(app: tauri::AppHandle, state: tauri::State<'_, Shared>) -> Result<()> {
+    allow_update_operation()?;
+    let state = state.inner().clone();
+    let lease = state.update_flow.lease()?;
+    let (candidate, bytes) = state.update_flow.installer()?;
+    if state.closing.swap(true, Ordering::SeqCst) { return Err("Restauração para fechamento em andamento".into()); }
+    let reset_closing = state.closing.clone();
+    let _ = app.emit("update-progress", serde_json::json!({"phase":"restoring"}));
+    let result = tauri::async_runtime::spawn_blocking(move || {
+        let _lease = lease;
+        restore_then_install(|| {
+            let mut session = state.session.lock().map_err(|_| "Estado indisponível")?;
+            if session.pending() { session.restore(&mut HidDevice::open()?).map(|_| ()) } else { Ok(()) }
+        }, || {
+            let _ = app.emit("update-progress", serde_json::json!({"phase":"installing"}));
+            candidate.install(bytes).map_err(|e| format!("Não foi possível iniciar a instalação: {e}"))
+        })
+    }).await.map_err(|e| e.to_string()).and_then(|r| r);
+    if result.is_err() { reset_closing.store(false, Ordering::SeqCst); }
+    result
 }
 
 fn main() {
@@ -104,8 +128,9 @@ fn main() {
     };
     let session = match Session::open(path) { Ok(s) => s, Err(e) => { show_error(&e); return; } };
     tauri::Builder::default()
-        .manage(Shared { session: Arc::new(Mutex::new(session)), closing: Arc::new(AtomicBool::new(false)), updates: Arc::new(Updates::new()) })
-        .invoke_handler(tauri::generate_handler![inspect, apply_effect, apply_headphone_mode, get_device_info, compare_original, restore_all, test_gain, smoke_mode, preview_mode, finish_smoke, recovery_pending, get_update_info, check_updates, open_releases, download_update])
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .manage(Shared { session: Arc::new(Mutex::new(session)), closing: Arc::new(AtomicBool::new(false)), updates: Arc::new(Updates::new()), update_flow: Arc::new(UpdateFlow::default()) })
+        .invoke_handler(tauri::generate_handler![inspect, apply_effect, apply_headphone_mode, get_device_info, compare_original, restore_all, test_gain, smoke_mode, preview_mode, finish_smoke, recovery_pending, get_update_info, check_updates, open_releases, download_update, install_update])
         .setup(move |app| {
             if !smoke { start_telemetry(app.handle().clone(), app.state::<Shared>().inner().clone()); }
             Ok(())
@@ -154,8 +179,7 @@ fn start_telemetry(app: tauri::AppHandle, state: Shared) {
                     if device.is_none() { let mut d=HidDevice::open()?; d.guard()?; device=Some(d); identity_time=std::time::Instant::now(); }
                     let d=device.as_mut().unwrap();
                     if identity_time.elapsed().as_secs()>=5 {
-                        let id=d.query(0,&[])?;
-                        if id!=[0x42,0,7,1,2,43,2,2,23,2,2,b'B',b'5',1] { return Err("Identidade alterada".into()); }
+                        d.check_identity()?;
                         identity_time=std::time::Instant::now();
                     }
                     Ok((d.meter_with_wait(0x91,8)?,d.meter_with_wait(0x82,8)?))

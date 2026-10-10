@@ -7,12 +7,13 @@ use serde::Serialize;
 #[derive(Debug, Serialize)]
 pub struct DeviceInfo {
     pub firmware: &'static str,
-    pub usb_capture_channels: u16,
-    pub usb_playback_channels: u16,
-    pub usb_sample_rates_hz: [u32; 2],
-    pub usb_transport_bits: [u16; 2],
-    pub usb_speed: &'static str,
-    pub usb_protocol: &'static str,
+    pub usb_capabilities_verified: bool,
+    pub usb_capture_channels: Option<u16>,
+    pub usb_playback_channels: Option<u16>,
+    pub usb_sample_rates_hz: Option<[u32; 2]>,
+    pub usb_transport_bits: Option<[u16; 2]>,
+    pub usb_speed: Option<&'static str>,
+    pub usb_protocol: Option<&'static str>,
     pub usb_capabilities_source: &'static str,
     pub reported_core_clock_mhz: Option<u16>,
     pub internal_sample_rate_hz_inferred: Option<u32>,
@@ -50,10 +51,17 @@ pub fn read(t: &mut impl Transport) -> Result<DeviceInfo> {
     let mode = u16::from_le_bytes([dac[15], dac[16]]);
     let headset_mode = match mode { 0 => Some("stereo".into()), 2 => Some("mono".into()), _ => Some("other".into()) };
     let (capture, playback) = windows_mix_formats();
+    // A matching DSP graph is not proof of identical USB audio descriptors.
+    let firmware = t.firmware();
+    let usb_capabilities_verified = firmware == "B5 0.7.1";
     Ok(DeviceInfo {
-        firmware: "B5 0.7.1", usb_capture_channels: 2, usb_playback_channels: 2,
-        usb_sample_rates_hz: [44100,48000], usb_transport_bits: [16,24],
-        usb_speed: "Full Speed", usb_protocol: "UAC 1.0",
+        firmware, usb_capabilities_verified,
+        usb_capture_channels: usb_capabilities_verified.then_some(2),
+        usb_playback_channels: usb_capabilities_verified.then_some(2),
+        usb_sample_rates_hz: usb_capabilities_verified.then_some([44100,48000]),
+        usb_transport_bits: usb_capabilities_verified.then_some([16,24]),
+        usb_speed: usb_capabilities_verified.then_some("Full Speed"),
+        usb_protocol: usb_capabilities_verified.then_some("UAC 1.0"),
         usb_capabilities_source: "Descriptors observed in the validated B5 0.7.1 unit; not a new USB descriptor fetch",
         reported_core_clock_mhz: clock, internal_sample_rate_hz_inferred: rate,
         internal_frame_samples_inferred: frame,
@@ -124,6 +132,38 @@ fn windows_mix_formats() -> (Mix, Mix) {
 #[cfg(test)]
 mod tests {
     use super::decode_diagnostics;
+    use crate::protocol::{Block, Result, Transport};
+    struct Fake { firmware: &'static str, rejected: bool, queries: usize }
+    impl Transport for Fake {
+        fn serial(&self) -> &str { "FAKE_DIAGNOSTIC" }
+        fn firmware(&self) -> &'static str { self.firmware }
+        fn guard(&mut self) -> Result<()> { if self.rejected { Err("Unverified".into()) } else { Ok(()) } }
+        fn query(&mut self, op: u8, _: &[u8]) -> Result<Vec<u8>> {
+            self.queries+=1;
+            match op {
+                0x01 => Ok(vec![255,0,0,0,0,0,1,7,0,1,0,0,0,0,0,0,1]),
+                0x02 => Ok(vec![255,120,0,160,0,0,240,0,0,1,0,0]),
+                0x09 => { let mut dac=vec![0;29];dac[0]=255;Ok(dac) },
+                _ => Err("Unexpected query".into()),
+            }
+        }
+        fn write_word(&mut self, _: Block, _: usize, _: i16) -> Result<()> { panic!("Diagnostics must not write") }
+    }
+    #[test] fn revision_073_has_actual_label_without_inheriting_usb_descriptor_claims() {
+        let mut t=Fake { firmware:"B5 0.7.3",rejected:false,queries:0 };
+        let info=super::read(&mut t).unwrap();
+        assert_eq!(info.firmware,"B5 0.7.3");assert!(!info.usb_capabilities_verified);
+        assert_eq!(info.usb_sample_rates_hz,None);assert_eq!(info.usb_transport_bits,None);
+        assert_eq!(info.usb_capture_channels,None);assert_eq!(info.usb_playback_channels,None);
+        assert_eq!(info.usb_speed,None);assert_eq!(info.usb_protocol,None);
+        assert_eq!(info.reported_core_clock_mhz,Some(240));
+        t.firmware="B5 0.7.1";let reference=super::read(&mut t).unwrap();
+        assert!(reference.usb_capabilities_verified);assert_eq!(reference.usb_sample_rates_hz,Some([44100,48000]));
+    }
+    #[test] fn rejected_device_is_not_queried_for_diagnostics() {
+        let mut t=Fake { firmware:"",rejected:true,queries:0 };
+        assert!(super::read(&mut t).is_err());assert_eq!(t.queries,0);
+    }
     #[test]
     fn decodes_observed_unit_without_equating_clock_and_sample_rate() {
         let system = [255,0,0,0,0,0,1,7,0,1,0,0,0,0,0,0,1];
