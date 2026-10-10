@@ -2,11 +2,27 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main",
   "description": "Local UI events only; device operations are typed Rust commands",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
-    "core:event:allow-listen", "core:event:allow-unlisten",
-    "allow-inspect", "allow-apply-effect", "allow-apply-headphone-mode", "allow-get-device-info", "allow-compare-original", "allow-restore-all",
-    "allow-test-gain", "allow-smoke-mode", "allow-preview-mode", "allow-recovery-pending", "allow-finish-smoke",
-    "allow-get-update-info", "allow-check-updates", "allow-open-releases", "allow-download-update"
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "allow-inspect",
+    "allow-apply-effect",
+    "allow-apply-headphone-mode",
+    "allow-get-device-info",
+    "allow-compare-original",
+    "allow-restore-all",
+    "allow-test-gain",
+    "allow-smoke-mode",
+    "allow-preview-mode",
+    "allow-recovery-pending",
+    "allow-finish-smoke",
+    "allow-get-update-info",
+    "allow-check-updates",
+    "allow-open-releases",
+    "allow-download-update",
+    "allow-install-update"
   ]
 }
