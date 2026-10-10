@@ -11,6 +11,7 @@ struct Counted {
     guard_ms: f64,
 }
 impl Transport for Counted {
+    fn firmware(&self) -> &'static str { self.device.firmware() }
     fn serial(&self) -> &str { self.device.serial() }
     fn query(&mut self, op: u8, payload: &[u8]) -> Result<Vec<u8>> { self.queries += 1; self.device.query(op, payload) }
     fn write_word(&mut self, block: Block, index: usize, value: i16) -> Result<()> {

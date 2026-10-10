@@ -52,8 +52,8 @@ fn run() -> Result<()> {
         && snapshot.gain_db == baseline.gain_db && snapshot.headphone_mode.as_deref() == Some("stereo")
         && !snapshot.recovery_pending && !snapshot.comparison)
         && after_dac.as_ref().is_ok_and(|dac| *dac == before_dac);
-    let report = serde_json::json!({"version": "0.7.0", "test": "integrated_headphone_mode_transaction",
-        "firmware": "B5 0.7.1", "before_dac": before_dac, "after_dac": after_dac.as_ref().ok(),
+    let report = serde_json::json!({"version": env!("CARGO_PKG_VERSION"), "test": "integrated_headphone_mode_transaction",
+        "firmware": baseline.firmware, "before_dac": before_dac, "after_dac": after_dac.as_ref().ok(),
         "test_result": test.as_ref().ok(), "error": test.as_ref().err(), "restore_error": restored.as_ref().err(),
         "final_dac_read_error": after_dac.as_ref().err(), "all_originals_restored": unchanged,
         "recovery_pending": session.pending(), "elapsed_ms": started.elapsed().as_millis(),
