@@ -24,11 +24,11 @@ jobs:
         run: cargo audit --file Cargo.lock
       - name: Build setup
         working-directory: src-tauri
-        run: cargo tauri build --bundles nsis -- --locked
+        run: cargo tauri build --bundles nsis --config '{"bundle":{"createUpdaterArtifacts":false}}' -- --locked
       - name: UI smoke check
         shell: pwsh
         run: |
-          $app = Start-Process -FilePath './src-tauri/target/release/am8-lab.exe' -ArgumentList '--smoke-test' -PassThru
+          $app = Start-Process -FilePath './src-tauri/target/release/am8-lab.exe' -ArgumentList '--smoke-test' -WindowStyle Hidden -PassThru
           if (-not $app.WaitForExit(30000) -or $app.ExitCode -ne 0) { throw 'UI smoke failed' }
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
