@@ -1,0 +1,20 @@
+{
+  "app_version": "0.7.1",
+  "client_date": "2026-10-10",
+  "library_tests_passed": 70,
+  "examples_check_exit": 0,
+  "release_build_exit": 0,
+  "identify_build_exit": 0,
+  "product_version": "0.7.1",
+  "smoke_exit": 0,
+  "journal_unchanged": true,
+  "local_readonly_diagnostic_exit": 0,
+  "local_readonly_firmware": "B5 0.7.1",
+  "local_readonly_graph_sha256": "bd9dbe74994cbb96cb2981c6bb340aae5b894409cf290378c6e0201ffc2f131d",
+  "device_parameter_writes_during_this_validation": 0,
+  "firmware_073_evidence": "User-supplied read-only report; no 0.7.3 physical effect, audio or restoration test performed here",
+  "fresh_security_audit_performed": false,
+  "installed": false,
+  "published": false,
+  "dependency_lock_unchanged_except_app_version": true
+}

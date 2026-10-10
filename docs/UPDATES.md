@@ -1,3 +1,37 @@
+# Atualizações pelo aplicativo — 0.7.2
+
+O usuário inicia a consulta, o download e a instalação no painel Atualizações. Não há consulta automática, download ao iniciar, gravação de áudio ou atualização de firmware. O AM8 não precisa estar conectado para baixar.
+
+## Fluxo
+
+1. **Verificar atualizações:** consulta a API pública do GitHub e o manifesto HTTPS fixo `https://raw.githubusercontent.com/NightXXT/am8lab/main/update.json`.
+2. **Baixar atualização:** transfere o setup dentro do aplicativo, mostra progresso e verifica a assinatura Minisign com a chave pública embarcada. A versão assinada deve coincidir com a anunciada. Tamanho e URL precisam corresponder à mesma Release.
+3. **Instalar e reiniciar:** bloqueia novas operações USB, espera a operação atual e restaura todos os ajustes pendentes. Falha de restauração mantém o aplicativo aberto e impede iniciar o setup. O instalador oficial NSIS do Tauri abre em modo de progresso, instala para o usuário atual e relança o AM8 Lab.
+
+Não são aceitos URL, caminho de arquivo ou argumentos de instalador fornecidos pela interface. Comandos genéricos do plugin de atualização não estão liberados no webview. Downloads não verificados não são instaláveis. Os bytes verificados ficam em memória; ao fechar o app, é preciso baixar novamente. Há uma operação de atualização por vez. Falhas permitem tentar novamente.
+
+A assinatura exige versão vinculada (`requireSignedVersion`), impedindo reutilizar um pacote antigo assinado com um número de versão adulterado. Não há downgrade. A API limita a resposta a 1 MiB e 30 Releases; arquivos devem ter de 1 byte a 500 MiB. A transferência tem timeout de 90 segundos e tamanho esperado. Notas são texto literal. Smoke e prévia bloqueiam rede, download e instalação.
+
+**Adoção:** versões até 0.7.1 têm o botão antigo que abre o navegador. Instale a 0.7.2 uma vez pelo setup para receber atualizações futuras dentro do app. Na versão portátil, instalar usa o setup do Windows; não troca apenas o EXE portátil. A assinatura de atualização não é Authenticode: o Windows ainda pode mostrar editor desconhecido.
+
+## Publicação
+
+Publicar código não basta: crie a Release, anexe `AM8-Lab-Setup-vX.Y.Z.exe`, sua assinatura `.exe.sig` e os hashes. Depois atualize `update.json` na raiz com versão, notas, data e plataforma `windows-x86_64`, URL exata e conteúdo do arquivo `.sig`. A chave privada fica fora do repositório; mantenha backup seguro. Veja [compilação e assinatura](BUILD.md).
+
+Pré-releases experimentais também podem ser oferecidas, identificadas no painel. Se a Release e o manifesto não coincidirem, o app informa a falha e não baixa. Abrir Releases continua sendo um link informativo para a página fixa do projeto.
+
+## Privacidade e rede
+
+API e manifesto são públicos, sem login/token. GitHub recebe dados normais de rede, como IP e User-Agent. Não há envio de áudio, serial, perfis ou diário. Os downloads do GitHub podem redirecionar para sua infraestrutura de assets; TLS e assinatura permanecem obrigatórios.
+
+## Resultados atuais
+
+76 testes Rust passaram, incluindo seleção de Releases, identidade/fluxo do firmware e seis testes do fluxo de atualização: correspondência de manifesto, limites de tamanho, exclusão mútua, pré-condição de download e ordem restauração/instalação. Auditoria RustSec: zero alertas na categoria vulnerabilidades; dois avisos informativos (glib e proc-macro-error), ambos fora do grafo Windows x64. A auditoria não garante ausência de falhas. O teste real de instalação de uma atualização entre duas versões ainda precisa de validação; não é substituído pelos testes simulados.
+
+---
+
+## Histórico: atualizador antigo
+
 # Atualizações manuais — 0.6.6
 
 O botão Atualizações mostra a versão local e consulta Releases públicas de [NightXXT/am8lab](https://github.com/NightXXT/am8lab/releases) quando o usuário pressiona Verificar atualizações. Não há consulta automática ao abrir o app, instalação em segundo plano ou gravação de firmware. O AM8 não precisa estar conectado.

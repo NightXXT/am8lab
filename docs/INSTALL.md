@@ -3,7 +3,7 @@
 Windows 10/11 x64. Escolha o setup nas Releases, confira o hash no PowerShell:
 
 ```powershell
-Get-FileHash -LiteralPath .\AM8-Lab-Setup-v0.7.0.exe -Algorithm SHA256
+Get-FileHash -LiteralPath .\AM8-Lab-Setup-v0.7.2.exe -Algorithm SHA256
 ```
 
 Compare com SHA256SUMS.txt da mesma Release. Um hash confere integridade em relação à lista; uma lista alterada junto com o arquivo não oferece autenticidade. Este lançamento é sem assinatura Authenticode.
@@ -20,14 +20,14 @@ Na 0.7.0, **Fones** também oferece **Mono/Estéreo**, com seu próprio botão A
 
 ## Atualizar uma instalação
 
-Na parte inferior do aplicativo, abra **Atualizações → Verificar atualizações**. Havendo um setup mais novo, **Baixar instalador** abre o arquivo da Release de [NightXXT/am8lab](https://github.com/NightXXT/am8lab/releases) no navegador padrão. A consulta não exige o microfone conectado e só acessa a internet quando você pede.
+Na 0.7.2 ou posterior, use **Atualizações → Verificar atualizações → Baixar atualização → Instalar e reiniciar**. O download é feito no app e a assinatura verificada antes de liberar a instalação. O app restaura a sessão antes de iniciar o setup; se a restauração falhar, reconecte o microfone e tente novamente. Salve os controles em um perfil para reaplicar depois. A atualização não grava firmware nem envia o diário.
 
-Confira o hash da mesma Release, restaure a sessão e feche o AM8 Lab normalmente. Execute o novo setup para o mesmo usuário. O app não instala a atualização sozinho e não atualiza firmware. Os perfis locais são mantidos; carregar um perfil prepara os controles e Aplicar envia os ajustes.
-
-Se não houver setup válido, use **Abrir Releases** para consultar a página. Enviar arquivos de código ao repositório não publica um instalador. Veja [os critérios da consulta](UPDATES.md).
+Versões até 0.7.1 precisam instalar a 0.7.2 uma vez pelo setup. Feche a versão antiga normalmente antes de executar esse setup. O pacote portátil também usa o instalador Windows para atualizar; não substitui apenas o executável portátil. Veja [detalhes e critérios](UPDATES.md).
 
 ## Navegação da interface 0.6.7
 
 Estúdio mostra a sessão e seus caminhos de áudio. Voz reúne os módulos com Aplicar por efeito. Fones abre o equalizador do áudio reproduzido pelo AM8, com ganho geral separado. Perfis guarda controles localmente; carregar continua apenas preparando os valores. Capacidades mostra o alcance dos testes e os recursos experimentais.
 
 Comparar com original e Restaurar sessão ficam no topo. Atualizações permanece na parte inferior da barra lateral, com consulta e download manuais. O redesign não altera a compatibilidade USB nem acrescenta efeitos, detecção física do P2 ou gravação de firmware.
+
+A versão 0.7.2 aceita B5 0.7.3 de forma experimental, com identidade e fluxo exatos; os testes físicos de efeitos nessa revisão ainda estão pendentes. Consulte [compatibilidade e limites](FIRMWARE-COMPATIBILITY.md). Feche normalmente para restaurar antes de executar o novo setup.

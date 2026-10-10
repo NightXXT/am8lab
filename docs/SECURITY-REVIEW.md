@@ -1,3 +1,15 @@
+# Revisão da atualização 0.7.2 — 10/10/2026
+
+O novo atualizador usa tauri-plugin-updater 2.13.2, HTTPS e assinatura Minisign com versão vinculada. A chave privada não está no projeto nem nos pacotes; apenas a chave pública é embarcada. A interface recebe comandos próprios tipados, sem permissões genéricas do updater, shell, arquivos ou URLs fornecidas pelo frontend. O destino do setup deve corresponder exatamente ao ativo da Release deste repositório; o tamanho informado é conferido no download. Bytes só entram no estado instalável depois da verificação criptográfica.
+
+A instalação exige um download verificado, serializa as operações de atualização, bloqueia novas alterações no mic e restaura a sessão antes de chamar o instalador. Falha na restauração impede instalar. Smoke e prévia recusam rede/instalação. O setup permanece sem assinatura Authenticode; Minisign é uma verificação independente feita pelo app.
+
+`cargo audit 0.22.2` consultou a base RustSec, commit `7eebec69c352c7191b1f13eb95dd510eeca5d1de`: **zero alertas na categoria vulnerabilities**. Houve dois avisos informativos: RUSTSEC-2024-0370 (`proc-macro-error`, unmaintained) e RUSTSEC-2024-0429 (`glib`, unsound). Ambos estão fora do grafo Windows x64 confirmado por cargo metadata com filter-platform; continuam no lockfile multiplataforma. O relatório resumido não contém caminhos pessoais ou tokens. A auditoria não é pentest e não prova ausência de falhas.
+
+76 testes passaram, incluindo seis do fluxo de atualização e as proteções da sessão/firmware. A instalação real entre duas versões e a escuta/restauração física do B5 0.7.3 ainda precisam de validação. Confiança na chave privada de publicação e integridade do sistema local continuam necessárias.
+
+---
+
 # Revisão de segurança — 06/10/2026 — versão 0.6.4
 
 ## Escopo
