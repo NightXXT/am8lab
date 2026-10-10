@@ -7,14 +7,17 @@
 **Software experimental para ajustar sua voz e os fones no DSP do FIFINE AM8 USB.**
 
 ![Windows 10/11 x64](https://img.shields.io/badge/Windows-10%2F11%20x64-0078D4?style=flat-square)
-![Versão 0.7.0 experimental](https://img.shields.io/badge/vers%C3%A3o-0.7.0%20experimental-8B5CF6?style=flat-square)
+![Versão 0.7.2 experimental](https://img.shields.io/badge/vers%C3%A3o-0.7.2%20experimental-8B5CF6?style=flat-square)
 [![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-22C55E?style=flat-square)](LICENSE)
 
-**[Baixar instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.7.0/AM8-Lab-Setup-v0.7.0.exe)** · [Versão portátil](https://github.com/NightXXT/am8lab/releases/download/v0.7.0/AM8-Lab-Portable-v0.7.0.zip) · [Hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.7.0/SHA256SUMS.txt) · [Release 0.7.0](https://github.com/NightXXT/am8lab/releases/tag/v0.7.0)
+**[Baixar instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.7.2/AM8-Lab-Setup-v0.7.2.exe)** · [Versão portátil](https://github.com/NightXXT/am8lab/releases/download/v0.7.2/AM8-Lab-Portable-v0.7.2.zip) · [Hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.7.2/SHA256SUMS.txt) · [Release 0.7.2](https://github.com/NightXXT/am8lab/releases/tag/v0.7.2)
 
 [Instalação](#instalação) · [Atualizações](#atualizações) · [Recursos](#recursos) · [Compatibilidade](#compatibilidade) · [Segurança](SECURITY.md) · [English](README.en.md)
 
 </div>
+
+> **Versão 0.7.2:** download e instalação pelo aplicativo, com assinatura verificada e restauração antes de reiniciar. Suporte experimental a **B5 0.7.1 e B5 0.7.3**, com identidade e fluxo exatos. Efeitos e restauração no 0.7.3 aguardam teste físico. Veja [compatibilidade e diagnóstico](docs/FIRMWARE-COMPATIBILITY.md).
+
 
 ---
 
@@ -23,7 +26,7 @@ O **AM8 Lab** é um aplicativo experimental e não oficial que ajusta os efeitos
 Construído com **Rust + Tauri**, com interface em português, medidores de áudio e comparação com o som original da sessão.
 
 > [!IMPORTANT]
-> Validado inicialmente em **um AM8 normal USB, firmware B5 0.7.1**. Outras revisões podem ser diferentes e são recusadas pelo aplicativo. O projeto não é afiliado nem endossado pela FIFINE.
+> Validado inicialmente em **um AM8 normal USB, firmware B5 0.7.1**. O código 0.7.2 também aceita a identidade B5 0.7.3 com fluxo idêntico, com o alcance descrito acima; demais revisões são recusadas. O projeto não é afiliado nem endossado pela FIFINE.
 
 **Para começar:** baixe o setup, confira o SHA-256, instale e conecte o AM8 por USB. O programa confere a compatibilidade antes de habilitar os ajustes. Os binários ainda não têm assinatura Authenticode; consulte [o guia de instalação](docs/INSTALL.md).
 
@@ -62,7 +65,7 @@ A ilustração do microfone foi removida do painel Estúdio. As informações de
 | 🧬 **Transformação Pro** | Controles independentes de altura e timbre. |
 | 🪩 **Reverb Sala/Plate** | Disponível como experimental; há relato de estalos na reprodução. |
 | 🔉 **Supressão de microfonia** | Experimental; eficácia acústica ainda não medida. |
-| ⬇️ **Atualizações** | Consulta manual das Releases do GitHub, com download do setup no navegador padrão. |
+| ⬇️ **Atualizações** | Consulta manual do GitHub, download assinado e instalação pelo app. |
 | 💾 **Perfis locais** | Salve os controles no computador e carregue quando quiser. |
 | ↔️ **Comparar e restaurar** | Alterne entre os efeitos e os valores anteriores à sessão; restaure todos os ajustes afetados. |
 
@@ -76,11 +79,9 @@ Na página **Voz**, cada módulo tem seu botão **Aplicar** e estado próprio. *
 
 As fontes, ícones e estilos usados pela interface são locais ou do sistema, sem pedidos de fonte/CDN ao abrir o programa. Consulte [o mapeamento do design e seus limites](docs/REDESIGN.md).
 
-### Atualizações manuais
+### Atualizações pelo aplicativo
 
-O botão **Atualizações**, na parte inferior do aplicativo, mostra a versão instalada e permite **Verificar atualizações**. A consulta funciona mesmo sem o AM8 conectado. Se houver um setup mais novo, **Baixar instalador** abre o arquivo da Release no navegador padrão. A instalação continua manual: feche o AM8 Lab normalmente para restaurar a sessão antes de executar o setup baixado.
-
-O destino é [NightXXT/am8lab](https://github.com/NightXXT/am8lab/releases). O aplicativo não procura atualizações ao iniciar, não instala nada automaticamente e não envia áudio ou identidade do microfone. Veja [como funciona a consulta](docs/UPDATES.md).
+**Atualizações → Verificar atualizações → Baixar atualização → Instalar e reiniciar.** O download ocorre no AM8 Lab, com progresso e verificação criptográfica da assinatura. Antes de instalar, o app restaura os ajustes temporários; se a restauração falhar, a instalação não começa. Não há consulta ao iniciar nem envio de áudio ou dados do microfone. Veja [o fluxo e a publicação de atualizações](docs/UPDATES.md).
 
 ### Equalizador dos fones e ganho geral
 
@@ -103,8 +104,8 @@ Os medidores usam uma **escala visual relativa**, sem calibração em dB. A resp
 
 **Requisitos:** Windows 10/11 x64, WebView2 e AM8 USB compatível.
 
-1. Abra a [Release 0.7.0](https://github.com/NightXXT/am8lab/releases/tag/v0.7.0).
-2. Baixe o [instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.7.0/AM8-Lab-Setup-v0.7.0.exe) e os [hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.7.0/SHA256SUMS.txt).
+1. Abra a [Release 0.7.2](https://github.com/NightXXT/am8lab/releases/tag/v0.7.2).
+2. Baixe o [instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.7.2/AM8-Lab-Setup-v0.7.2.exe) e os [hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.7.2/SHA256SUMS.txt).
 3. Confira o hash conforme [o guia de instalação](docs/INSTALL.md) e execute o setup.
 4. Conecte o AM8 por **USB** e abra o programa.
 
@@ -113,7 +114,7 @@ O setup instala para o usuário atual, cria atalhos e inclui desinstalador. Se o
 <details>
 <summary><strong>Prefere uma versão portátil?</strong></summary>
 
-Baixe `AM8-Lab-Portable-v0.7.0.zip` nas Releases, confira o hash, extraia a pasta e abra `AM8-Lab.exe`. Mantenha os arquivos de licença que acompanham o programa. WebView2 precisa estar instalado.
+Baixe `AM8-Lab-Portable-v0.7.2.zip` nas Releases, confira o hash, extraia a pasta e abra `AM8-Lab.exe`. Mantenha os arquivos de licença que acompanham o programa. WebView2 precisa estar instalado.
 
 </details>
 
@@ -123,8 +124,10 @@ Baixe `AM8-Lab-Portable-v0.7.0.zip` nas Releases, confira o hash, extraia a past
 ## Atualizações
 
 1. Clique em **Atualizações** no rodapé e depois em **Verificar atualizações**.
-2. Quando houver uma versão mais nova, clique em **Baixar instalador**. O navegador abre o setup validado da Release.
-3. Confira o hash publicado, feche o aplicativo normalmente e execute o novo setup.
+2. Quando houver uma versão mais nova assinada, clique em **Baixar atualização**. O app mostra o progresso e verifica a assinatura.
+3. Salve seus controles em um perfil e clique em **Instalar e reiniciar**. O microfone é restaurado antes de iniciar o instalador.
+
+Quem usa uma versão até 0.7.1 precisa instalar a 0.7.2 uma vez pelo setup; o atualizador antigo abre o navegador. Nas versões seguintes, o processo ocorre no app. A versão portátil passa a usar o instalador e pode criar uma instalação no Windows; não substitui somente o EXE da pasta portátil.
 
 A verificação considera até 30 Releases publicadas e usa a versão do arquivo `AM8-Lab-Setup-vX.Y.Z.exe`. Atualizar somente o código do repositório não cria uma atualização instalável. Se o app local for mais novo que o setup publicado, ele informa isso e não oferece uma versão antiga. As pré-releases experimentais também podem aparecer, identificadas no painel.
 
@@ -156,7 +159,7 @@ Experimente **ruído + EQ suave + compressor leve**, com tom, transformação e 
 | :--- | :--- |
 | Sistema | Windows 10/11 x64 — sistemas alvo |
 | Microfone | FIFINE AM8 normal, conectado por USB |
-| Firmware | **B5 0.7.1** |
+| Firmware aceito no código 0.7.1 | **B5 0.7.1 e B5 0.7.3**, com identidade e fluxo exatos |
 | Biblioteca / engine | **2.43.2 / 2.23.2** |
 | USB | VID:PID **3142:A010**, interface **MI_04** |
 | Fluxo | Modo **HunXiang** e fingerprint conhecido |
@@ -192,7 +195,7 @@ Ainda não. A validação física cobriu **uma unidade do AM8 normal com firmwar
 
 ### Como atualizo o programa?
 
-Use **Atualizações → Verificar atualizações → Baixar instalador**. Confira o hash, feche o aplicativo normalmente para restaurar a sessão e execute o novo setup. A instalação é manual; não há atualização de firmware. As [Releases](https://github.com/NightXXT/am8lab/releases) também podem ser acessadas pelo navegador.
+Use **Atualizações → Verificar atualizações → Baixar atualização → Instalar e reiniciar**. O app verifica a assinatura e restaura a sessão antes de instalar. Não há atualização de firmware. As [Releases](https://github.com/NightXXT/am8lab/releases) também podem ser acessadas pelo navegador.
 
 ### O EQ dos fones muda o áudio dos jogos e do Discord?
 
@@ -216,6 +219,8 @@ Não. Esses recursos estão fora desta versão. Os efeitos experimentais e seus 
 - Ajustes e perfis não são gravados na firmware.
 
 ## Segurança e privacidade
+
+Na 0.7.2, o atualizador usa pacotes assinados com Minisign, versão vinculada à assinatura, HTTPS e manifesto fixo deste repositório. Isso é separado de Authenticode: o setup ainda não possui certificado de editor do Windows. Não há comandos genéricos de instalação expostos à interface.
 
 A interface permite somente comandos próprios tipados e escuta de eventos. Os valores são validados no Rust; o app não oferece comandos genéricos de shell, rede ou arquivos pela interface. Ele não grava voz, não faz upload de áudio e não inclui telemetria de rede. A consulta manual de atualizações acessa a API pública do GitHub por HTTPS e informa a versão do app no User-Agent.
 

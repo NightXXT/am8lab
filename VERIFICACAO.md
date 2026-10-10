@@ -1,3 +1,33 @@
+# Verificação da entrega 0.7.2 — 10/10/2026
+
+- 76 testes Rust aprovados, incluindo seis do fluxo de atualização assinado.
+- Exemplos verificados; compilação release e setup NSIS assinado concluídos.
+- Smoke nativo do executável: exit 0. Diário normal de recuperação preservado, sem acesso USB pelo smoke.
+- JavaScript passou pela verificação sintática do Node.
+- Auditoria RustSec atual: zero vulnerabilidades classificadas; dois avisos informativos (glib e proc-macro-error), fora do grafo Windows x64.
+- Download nativo com verificação de assinatura/versão e instalação pelo app implementados. Instalação real entre duas versões ainda não executada; os testes de ordem e falha de restauração são simulados.
+- Testes físicos históricos pertencem ao B5 0.7.1. B5 0.7.3 tem identidade/fluxo conferidos por relatório fornecido pelo usuário; efeitos, escuta e restauração nessa revisão continuam pendentes.
+- Chave privada fora das fontes e dos pacotes. Assinatura do atualizador não é Authenticode; setup sem certificado de editor Windows.
+
+Dados desta validação: [JSON](docs/updater-v072-validation.json). Detalhes: [atualizações](docs/UPDATES.md), [segurança](docs/SECURITY-REVIEW.md) e [firmware](docs/FIRMWARE-COMPATIBILITY.md).
+
+---
+
+# Verificação da entrega local 0.7.1
+
+Verificada em 10/10/2026, após recuperar a base publicada 0.7.0 e reaplicar as mudanças de compatibilidade. Esta entrega aceita experimentalmente as identidades exatas B5 0.7.1 e B5 0.7.3 com o mesmo modo, nome e fingerprint de fluxo.
+
+- **70 testes Rust passaram**, incluindo rejeição de identidade truncada/alterada, biblioteca/engine incorretas, troca de firmware entre revisões aceitas durante uma conexão, fluxo incompleto ou com hash divergente, snapshot do firmware real e escopo dos descritores USB.
+- Todos os exemplos passaram na verificação de compilação. O diagnóstico identify foi compilado em release.
+- Aplicativo x64 e instalador NSIS **0.7.1** compilados com saída 0; ProductVersion 0.7.1.
+- O executável **--smoke-test terminou com saída 0**, incluindo firmware dinâmico e dados USB não atribuídos à revisão não verificada. O arquivo de recuperação normal permaneceu idêntico.
+- O diagnóstico **somente de leitura** passou no aparelho conectado **B5 0.7.1**: modo HunXiang, fluxo completo de 2931 bytes e SHA-256 conhecido conferidos. Nenhum parâmetro foi alterado nesta validação.
+- Dependências travadas preservadas; somente a versão do próprio aplicativo mudou no lockfile. Não foi repetida a auditoria de segurança histórica.
+
+A evidência do B5 0.7.3 vem do resumo técnico fornecido pelo usuário. Aplicar, ouvir, comparar e restaurar nessa unidade **ainda não foram testados aqui**. Os testes de escrita/escuta históricos abaixo permanecem restritos ao aparelho B5 0.7.1; os resultados não foram reclassificados para 0.7.3.
+
+Consulte [compatibilidade e diagnóstico](docs/FIRMWARE-COMPATIBILITY.md) e [relatório numérico](docs/firmware-v071-validation.json). Binários sem assinatura Authenticode. Entrega local, não instalada nem publicada no GitHub. Caches de compilação ficam fora do pacote. A revisão automática bloqueou sua exclusão local; a limpeza de work/am8-build-v071 precisa ser manual.
+
 # Verificação da entrega 0.7.0
 
 08/10/2026. Controle mono/estéreo dos fones e área de informações do AM8 adicionados. A seleção continua preparada até pressionar Aplicar.

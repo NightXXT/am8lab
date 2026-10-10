@@ -1,3 +1,18 @@
+# AM8 Lab 0.7.2 — atualizações pelo aplicativo
+
+- Download dentro do app, com progresso e assinatura Minisign vinculada à versão.
+- Botão Instalar e reiniciar: restaura o microfone antes de iniciar o setup. Se houver falha na restauração, a instalação é bloqueada.
+- Suporte experimental às identidades B5 0.7.1 e B5 0.7.3 com o mesmo fluxo conhecido. B5 0.7.3 ainda precisa de teste físico de efeitos e restauração.
+- Diagnóstico identify somente de leitura; campos USB históricos ficam identificados como não verificados no 0.7.3.
+
+Versões antigas até 0.7.1 precisam instalar este setup uma vez para adotar o novo atualizador. O setup não tem assinatura Authenticode; a assinatura do atualizador é uma verificação separada. Não atualiza firmware. Reverb continua experimental por relato de estalos.
+
+# AM8 Lab 0.7.1 — entrega local
+
+Suporte experimental ao firmware B5 0.7.3, preservando B5 0.7.1. Aceitação por identidade exata, modo, nome e fluxo completo de 2931 bytes/SHA-256. A checagem periódica preserva a identidade exata da conexão; firmware real no snapshot e na interface.
+
+Novo diagnóstico identify somente de leitura. Dados USB estáticos observados no B5 0.7.1 não são atribuídos ao 0.7.3. A evidência 0.7.3 vem do resumo técnico fornecido pelo usuário; aplicação, restauração e escuta nessa revisão continuam pendentes. Consulte [compatibilidade](docs/FIRMWARE-COMPATIBILITY.md) e [verificação](VERIFICACAO.md). Esta entrega não está publicada no GitHub.
+
 # AM8 Lab 0.7.0
 
 Modo nativo **Mono/Estéreo dos fones** com botão Aplicar, comparação e restauração. Uma unidade AM8 USB B5 0.7.1 confirmou a mudança e o retorno ao estéreo por escuta; a integração verificou o diário, os 14 campos do DAC e a recuperação após reabrir a sessão.

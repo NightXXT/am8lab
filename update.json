@@ -1,0 +1,11 @@
+{
+  "version": "0.7.2",
+  "notes": "Atualizações dentro do aplicativo, assinatura verificada e restauração antes de instalar. Compatibilidade experimental com B5 0.7.3.",
+  "pub_date": "2026-10-10T13:00:00Z",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVST2hRQ0ZudG9lTHpDUE4vUk56TFlVT2JHQzhIbnZ4a2xOeXdzMFNFbEdYUFBtekJkYldRUnpiWXR1bGUwc1p2R0x5ZE50NkRUbGR5cEl2MG9DNUVnYzBwOG50ZDRUTmdZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxNjM5MjczCWZpbGU6QU04IExhYl8wLjcuMl94NjQtc2V0dXAuZXhlCXZlcnNpb246MC43LjIKeWYyZGFlVFhROVcva0tWM2d3cFR3SnZ4ZVZ5RURjajlZYlZNRDJWc1NIN2o3MndQTmRzdEZIdFhPaGd5MWxyaXY1TVNVMjBHMWlPTndLSGFkRHBJQ2c9PQo=",
+      "url": "https://github.com/NightXXT/am8lab/releases/download/v0.7.2/AM8-Lab-Setup-v0.7.2.exe"
+    }
+  }
+}

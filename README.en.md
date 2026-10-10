@@ -5,15 +5,15 @@
 ![AM8 Lab — Native DSP controls for the FIFINE AM8](docs/assets/banner.svg)
 
 ![Windows 10/11 x64](https://img.shields.io/badge/Windows-10%2F11%20x64-0078D4?style=flat-square)
-![Experimental 0.7.0](https://img.shields.io/badge/version-0.7.0%20experimental-8B5CF6?style=flat-square)
+![Experimental 0.7.2](https://img.shields.io/badge/version-0.7.2%20experimental-8B5CF6?style=flat-square)
 [![MIT license](https://img.shields.io/badge/license-MIT-22C55E?style=flat-square)](LICENSE)
 
-**[Download Windows installer](https://github.com/NightXXT/am8lab/releases/download/v0.7.0/AM8-Lab-Setup-v0.7.0.exe)** · [Portable ZIP](https://github.com/NightXXT/am8lab/releases/download/v0.7.0/AM8-Lab-Portable-v0.7.0.zip) · [SHA-256 hashes](https://github.com/NightXXT/am8lab/releases/download/v0.7.0/SHA256SUMS.txt) · [Release 0.7.0](https://github.com/NightXXT/am8lab/releases/tag/v0.7.0)
+**[Download Windows installer](https://github.com/NightXXT/am8lab/releases/download/v0.7.2/AM8-Lab-Setup-v0.7.2.exe)** · [Portable ZIP](https://github.com/NightXXT/am8lab/releases/download/v0.7.2/AM8-Lab-Portable-v0.7.2.zip) · [SHA-256 hashes](https://github.com/NightXXT/am8lab/releases/download/v0.7.2/SHA256SUMS.txt) · [Release 0.7.2](https://github.com/NightXXT/am8lab/releases/tag/v0.7.2)
 
 Experimental, unofficial Windows USB controller for the FIFINE AM8's native DSP. Built with Rust + Tauri; the UI is in Portuguese. Voice effects and headphone playback EQ run on the AM8, without PC audio processing, a virtual microphone or firmware flashing.
 
 > [!IMPORTANT]
-> Initially validated on **one AM8 USB unit with B5 0.7.1 firmware**. Other revisions are refused. This project is not affiliated with or endorsed by FIFINE.
+> **0.7.2** supports signed in-app download and installation, restoring microphone settings before restart. Exact B5 0.7.1 and B5 0.7.3 identities and the complete known DSP flow are required. B5 0.7.3 evidence is read-only; physical effect and restoration tests remain pending. See [compatibility](docs/FIRMWARE-COMPATIBILITY.md). Independent project, not endorsed by FIFINE.
 
 ![AM8 Lab studio interface: voice and headphone controls](docs/assets/studio-preview.png)
 
@@ -43,9 +43,9 @@ The microphone illustration has been removed from the Studio panel. USB, filter 
 
 ## Features and compatibility
 
-Download `AM8-Lab-Setup-v0.7.0.exe` and `SHA256SUMS.txt` from this repository's Releases. Check the hash, install, connect the microphone and apply controls. Setup installs for the current user and checks WebView2; if missing, Microsoft's embedded bootstrapper needs internet to install the runtime. Binaries are not Authenticode-signed; a hash is not a trust guarantee.
+Download `AM8-Lab-Setup-v0.7.2.exe` and `SHA256SUMS.txt` from this repository's Releases. Check the hash, install, connect the microphone and apply controls. Setup installs for the current user and checks WebView2; if missing, Microsoft's embedded bootstrapper needs internet to install the runtime. Binaries are not Authenticode-signed; a hash is not a trust guarantee.
 
-Validated on Windows x64, USB 3142:A010 / MI_04, B5 0.7.1 / library2.43.2 / engine2.23.2 / HunXiang and one known graph fingerprint. Other revisions are refused. Hardware testing covered one physical unit; broad compatibility is not established.
+Hardware tests were performed on Windows x64, USB 3142:A010 / MI_04, B5 0.7.1 / library2.43.2 / engine2.23.2 / HunXiang and one known graph fingerprint. The 0.7.2 source also accepts the exact B5 0.7.3 identity with that same flow. Other revisions are refused; broad compatibility is not established.
 
 Noise, ten-filter microphone EQ, independent ten-filter headphone EQ, single-band compressor, standard/Pro pitch and Pro voice transformation are available. Pitch, transformation and reverberation are mutually exclusive. **Room/plate reverb is experimental: playback crackles were reported and stopped when disabled.** Feedback suppression is also experimental. RGB, autotune, echo and multiband compressor are excluded.
 
@@ -59,11 +59,9 @@ MIT for original code; third-party notices apply. Not affiliated with FIFINE.
 
 Headphone **general gain** is adjustable from 0 to +18 dB, the verified native descriptor limit. +20 dB exceeds that limit and is rejected. Positive gain can clip; the app has no automatic limiter. EQ boost compensation remains active. Older headphone profiles without the gain field load with 0 dB. See [gain evidence and limits](docs/HEADPHONE-GAIN.md).
 
-## Manual updates in 0.6.6
+## In-app updates
 
-The **Atualizações** footer button opens a panel with the current version and **Verificar atualizações**. Checks run only on request, work without a connected AM8, and read public Releases from [NightXXT/am8lab](https://github.com/NightXXT/am8lab/releases) over HTTPS. When a newer installer is available, **Baixar instalador** opens it in the default browser. Close the app normally to restore the session before manually running the downloaded installer. There is no automatic installation or firmware update.
-
-The app examines up to 30 published Releases and selects the highest canonical `X.Y.Z` version from an exact `AM8-Lab-Setup-vX.Y.Z.exe` asset. Published experimental prereleases can be offered and are identified. Code commits alone are not downloadable app updates. An older published installer is not offered as a downgrade. No voice, device serial or recovery data is sent; GitHub receives an ordinary network request and the app version in its User-Agent. See [update behavior and verification](docs/UPDATES.md).
+Click **Atualizações → Verificar atualizações → Baixar atualização → Instalar e reiniciar**. Downloads stay inside AM8 Lab, with progress and Minisign verification including the signed version. The app restores pending microphone settings before starting the installer; restoration failure prevents installation. Older versions through 0.7.1 need one manual setup installation to adopt this updater. Portable copies use Windows setup rather than replacing only the portable EXE. No firmware is flashed. See [updates](docs/UPDATES.md).
 
 ## Studio redesign in 0.6.7
 
@@ -75,7 +73,7 @@ Interface fonts, icons and styles are local or provided by the system, without f
 
 **Is this official FIFINE software?** No. AM8 Lab is an independent, experimental application for one identified AM8 USB revision.
 
-**Does every AM8 work?** Compatibility checks require B5 0.7.1 and the known internal layout. Testing has covered one unit. Other revisions are refused; there is no firmware flashing.
+**Does every AM8 work?** Source version 0.7.2 accepts only the exact B5 0.7.1 or B5 0.7.3 identities and the known internal flow. Physical effect tests covered the 0.7.1 unit; 0.7.3 effect testing remains pending. Other revisions are refused; there is no firmware flashing.
 
 **Can I use XLR alone?** USB is required for the control commands. Documented listening checks concern USB audio and the AM8 headphone path, not XLR output.
 
