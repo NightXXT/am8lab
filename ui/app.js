@@ -1,7 +1,7 @@
 'use strict';
 const $=id=>document.getElementById(id), invoke=(name,args={})=>window.__TAURI__.core.invoke(name,args);
 const state={busy:false,connected:false,pending:false,snapshot:null,dirty:new Set(),smoke:false,lastError:null,view:"overview",applying:null,failedEffect:null};
-const updates={info:null,busy:'',native:false,restricted:true,notice:'',noticeError:false};
+const updates={info:null,busy:'',native:false,restricted:true,notice:'',noticeError:false,progress:null};
 const deviceInfo={info:null,busy:false,error:''};
 let headphoneModeDraft=null;
 const headphoneModes={stereo:'Estéreo',mono:'Mono'};
@@ -16,7 +16,7 @@ const updateStatuses={
  unavailable:['Instalador indisponível','Há uma release, mas ela ainda não oferece um instalador compatível. Confira os detalhes em Releases.','○'],
  error:['Não foi possível verificar','Confira sua conexão e tente novamente. Você também pode abrir Releases no navegador.','!']
 };
-function updateDownloadReady(){return updates.info?.status==='available'&&typeof updates.info.latest_version==='string'&&typeof updates.info.download_url==='string'&&!!updates.info.download_url;}
+function updateDownloadReady(){return updates.info?.direct_update_ready===true&&updates.info?.status==='available'&&typeof updates.info.latest_version==='string'&&typeof updates.info.download_url==='string'&&!!updates.info.download_url;}
 function renderUpdates(){
  const info=updates.info,status=Object.hasOwn(updateStatuses,info?.status)?info.status:'idle',checking=updates.busy==='checking';
  const [title,hint,icon]=checking?['Verificando atualizações…','Consultando as versões publicadas no GitHub.','↻']:updateStatuses[status];
@@ -31,9 +31,10 @@ function renderUpdates(){
  $('updatesDownloadInfo').hidden=!downloadName;$('updatesDownloadInfo').textContent=downloadName?'Instalador: '+downloadName+size:'';
  const blocked=!updates.native||updates.restricted||state.smoke;
  $('updatesCheck').disabled=blocked||!!updates.busy;$('updatesReleases').disabled=blocked||!!updates.busy;
- $('updatesDownload').hidden=!updateDownloadReady();$('updatesDownload').disabled=blocked||!!updates.busy||!updateDownloadReady();
+ $('updatesDownload').hidden=!updateDownloadReady();$('updatesDownload').disabled=blocked||!!updates.busy||!updateDownloadReady()||(updates.info?.downloaded===true&&state.busy);
  $('updatesCheckSpinner').hidden=!checking;$('updatesCheckLabel').textContent=checking?'Verificando…':status==='error'?'Tentar novamente':status==='available'?'Verificar novamente':'Verificar atualizações';
- $('updatesDownload').textContent=updates.busy==='download'?'Abrindo navegador…':'Baixar instalador';
+ $('updatesDownload').textContent=updates.busy==='download'?'Baixando…':updates.busy==='installing'?'Instalando…':info?.downloaded===true?'Instalar e reiniciar':'Baixar atualização';
+ const progress=updates.progress;$('updatesProgress').hidden=!progress;const total=Number(progress?.total),received=Number(progress?.received),percent=total>0&&Number.isFinite(received)?Math.max(0,Math.min(100,Math.round(received/total*100))):0;$('updatesProgressBar').value=percent;$('updatesProgressLabel').textContent=progress?.phase==='verified'?'Download verificado. Pronto para instalar.':progress?.phase==='restoring'?'Restaurando o microfone antes de instalar…':progress?.phase==='installing'?'Instalando e reiniciando o AM8 Lab…':'Baixando atualização · '+percent+'%';
  $('updatesCheck').classList.toggle('update-secondary',updateDownloadReady());
  $('updatesPreviewHint').hidden=!blocked;$('updatesNotice').hidden=!updates.notice;$('updatesNotice').textContent=updates.notice;$('updatesNotice').classList.toggle('is-error',updates.noticeError);
  $('updatesCheckedAt').textContent=Number.isFinite(info?.checked_at)&&info.checked_at>0?'Verificado às '+new Date(info.checked_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'Sem verificação automática';
@@ -45,21 +46,27 @@ async function initializeUpdates(){
  renderUpdates();
 }
 async function updateAction(command){
- if(!updates.native||updates.restricted||state.smoke||updates.busy||command==='download_update'&&!updateDownloadReady())return;
- if(!['check_updates','open_releases','download_update'].includes(command))return;
- updates.busy=command==='check_updates'?'checking':command==='download_update'?'download':'opening';updates.notice='';updates.noticeError=false;renderUpdates();
+ if(!updates.native||updates.restricted||state.smoke||updates.busy||['download_update','install_update'].includes(command)&&!updateDownloadReady()||command==='install_update'&&(updates.info?.downloaded!==true||state.busy))return;
+ if(!['check_updates','open_releases','download_update','install_update'].includes(command))return;
+ updates.busy=command==='check_updates'?'checking':command==='download_update'?'download':command==='install_update'?'installing':'opening';updates.notice='';updates.noticeError=false;
+ if(command==='check_updates')updates.progress=null;
+ if(command==='download_update')updates.progress={phase:'downloading',received:0,total:updates.info?.download_size};
+ renderUpdates();
  try{
-  if(command==='check_updates')updates.info=await invoke(command);
-  else{await invoke(command);updates.notice=command==='download_update'?'Continue o download no navegador. Depois, feche o AM8 Lab normalmente antes de executar o instalador.':'A página de Releases foi aberta no navegador.';}
+  if(['check_updates','download_update'].includes(command))updates.info=await invoke(command);
+  else if(command==='install_update'){await invoke(command);}
+  else{await invoke(command);updates.notice='A página de Releases foi aberta no navegador.';}
+  if(command==='download_update')updates.notice='Assinatura conferida. Clique em Instalar e reiniciar.';
  }catch(error){
-  if(command==='check_updates')updates.info={...updates.info,status:'error',download_url:null};
-  updates.notice=command==='check_updates'?'Não foi possível consultar o GitHub. Tente novamente ou abra Releases.':command==='download_update'?'Não foi possível iniciar o download. Verifique novamente ou abra Releases.':'Não foi possível abrir o navegador. Tente novamente.';updates.noticeError=true;
+  if(command==='check_updates'){try{updates.info=await invoke('get_update_info');}catch{updates.info={...updates.info,status:'error',direct_update_ready:false,downloaded:false};}}
+  updates.notice=String(error||'Não foi possível concluir a atualização. Tente novamente.');updates.noticeError=true;
+  if(command==='download_update')updates.progress=null;
  }finally{updates.busy='';renderUpdates();}
 }
 $('updatesOpen').onclick=()=>{$('updatesDialog').showModal();renderUpdates();};
 $('updatesClose').onclick=()=>$('updatesDialog').close();
 $('updatesDialog').addEventListener('close',()=>$('updatesOpen').focus());
-$('updatesCheck').onclick=()=>updateAction('check_updates');$('updatesReleases').onclick=()=>updateAction('open_releases');$('updatesDownload').onclick=()=>updateAction('download_update');
+$('updatesCheck').onclick=()=>updateAction('check_updates');$('updatesReleases').onclick=()=>updateAction('open_releases');$('updatesDownload').onclick=()=>updateAction(updates.info?.downloaded===true?'install_update':'download_update');
 const fields={
  noise:[['threshold','Limiar',-70,-20,-40,'dB'],['ratio','Intensidade',1,10,4,''],['attack','Ataque',1,100,10,'ms'],['release','Liberação',50,1000,200,'ms']],
  pitch:[['pitch','Altura',-3,3,0,'st']],
@@ -133,29 +140,40 @@ function infoMix(info,prefix){
  return (rate/1000).toLocaleString('pt-BR')+' kHz · '+channels+' canais · '+bits+' bits no mixer';
 }
 function infoBandwidth(info){
+ if(info?.usb_capabilities_verified!==true)return '—';
  if(!Array.isArray(info?.usb_sample_rates_hz)||!info.usb_sample_rates_hz.length||!Array.isArray(info?.usb_transport_bits)||!info.usb_transport_bits.length||info.usb_capture_channels!==2||info.usb_playback_channels!==2)return '—';
  const values=info.usb_sample_rates_hz.flatMap(rate=>info.usb_transport_bits.map(bits=>rate*bits*2/1000000));
  if(values.some(x=>!Number.isFinite(x)||x<=0))return '—';
  const format=x=>x.toLocaleString('pt-BR',{maximumFractionDigits:4});
  return format(Math.min(...values))+'–'+format(Math.max(...values))+' Mb/s por caminho';
 }
+function renderFirmware(){
+ const firmware=state.connected?(state.snapshot?.firmware||deviceInfo.info?.firmware):null;
+ const identified=typeof firmware==='string'&&!!firmware;
+ $('firmware').textContent=identified?'Firmware '+firmware:'Conecte o AM8 por USB';
+ $('heroFirmware').textContent=identified?firmware:'AM8 USB';
+ $('heroFirmwareNote').textContent=identified?(firmware==='B5 0.7.3'?'Compatibilidade experimental':'Identidade e fluxo conferidos'):'Conecte para identificar';
+ $('capabilitiesFirmware').textContent=identified?firmware:'AM8 USB';
+}
 function renderDeviceInfo(){
- const info=state.connected?deviceInfo.info:null;
+ const info=state.connected?deviceInfo.info:null,verified=info?.usb_capabilities_verified===true,unknown=info?'Não verificado nesta revisão':'—';
  $('deviceInfoRefresh').disabled=!window.__TAURI__||!state.connected||state.busy||deviceInfo.busy||state.smoke;
  $('deviceInfoRefresh').textContent=deviceInfo.busy?'Lendo…':'Atualizar informações';
  $('deviceInfoStatus').textContent=deviceInfo.busy?'Consultando o AM8 e os formatos do Windows…':deviceInfo.error?deviceInfo.error:!state.connected?'Conecte o AM8 para consultar as informações.':info?'Informações consultadas nesta sessão.':'Abra esta área para consultar o aparelho.';
  $('deviceInfoStatus').classList.toggle('is-error',!!deviceInfo.error);
  $('deviceInfoFirmware').textContent=typeof info?.firmware==='string'?info.firmware:'—';
- $('deviceInfoUsb').textContent=info&&typeof info.usb_speed==='string'&&typeof info.usb_protocol==='string'?info.usb_speed+' · '+info.usb_protocol:'—';
- $('deviceInfoChannels').textContent=info&&Number.isInteger(info.usb_capture_channels)&&Number.isInteger(info.usb_playback_channels)?info.usb_capture_channels+' captura / '+info.usb_playback_channels+' reprodução':'—';
- $('deviceInfoRates').textContent=infoRates(info?.usb_sample_rates_hz);
- $('deviceInfoTransportBits').textContent=Array.isArray(info?.usb_transport_bits)&&info.usb_transport_bits.every(x=>Number.isInteger(x)&&x>0)?info.usb_transport_bits.join(' / ')+' bits no USB':'—';
- $('deviceInfoBandwidth').textContent=infoBandwidth(info);
+ $('deviceInfoUsb').textContent=verified&&typeof info.usb_speed==='string'&&typeof info.usb_protocol==='string'?info.usb_speed+' · '+info.usb_protocol:unknown;
+ $('deviceInfoChannels').textContent=verified&&Number.isInteger(info.usb_capture_channels)&&Number.isInteger(info.usb_playback_channels)?info.usb_capture_channels+' captura / '+info.usb_playback_channels+' reprodução':unknown;
+ $('deviceInfoRates').textContent=verified?infoRates(info.usb_sample_rates_hz):unknown;
+ $('deviceInfoTransportBits').textContent=verified&&Array.isArray(info.usb_transport_bits)?info.usb_transport_bits.join(' / ')+' bits no USB':unknown;
+ $('deviceInfoBandwidth').textContent=verified?infoBandwidth(info):unknown;
+ $('deviceInfoUsbNote').textContent=verified?'Descritores observados na unidade B5 0.7.1; não são consultados novamente nesta tela. Bits de transporte não medem a resolução do conversor. Vazão calculada sem overhead.':info?'Os descritores USB desta revisão ainda não foram verificados. O formato do mixer é consultado no Windows.':'Descritores USB observados no B5 0.7.1; pendentes no B5 0.7.3.';
  $('deviceInfoClock').textContent=Number.isFinite(info?.reported_core_clock_mhz)&&info.reported_core_clock_mhz>0?infoNumber(info.reported_core_clock_mhz)+' MHz reportados':'—';
  $('deviceInfoInternalRate').textContent=Number.isFinite(info?.internal_sample_rate_hz_inferred)&&info.internal_sample_rate_hz_inferred>0?(info.internal_sample_rate_hz_inferred/1000).toLocaleString('pt-BR')+' kHz · inferido':'—';
  $('deviceInfoFrame').textContent=Number.isInteger(info?.internal_frame_samples_inferred)&&info.internal_frame_samples_inferred>0?infoNumber(info.internal_frame_samples_inferred)+' amostras · inferido':'—';
  $('deviceInfoCaptureMix').textContent=infoMix(info,'capture');$('deviceInfoPlaybackMix').textContent=infoMix(info,'playback');
  $('deviceInfoHeadsetMode').textContent=knownHeadphoneMode(info?.headset_mode)?headphoneModes[info.headset_mode]:'—';
+ renderFirmware();
 }
 async function readDeviceInfo(){
  if(!window.__TAURI__||!state.connected||state.busy||deviceInfo.busy||state.smoke)return false;
@@ -218,7 +236,7 @@ function controls(){
 function snapshot(data,reset=false){
  state.snapshot=data;state.connected=true;state.pending=data.recovery_pending;if(reset)state.dirty.clear();
  if(!state.dirty.has('headphone_mode'))headphoneModeDraft=knownHeadphoneMode(data.headphone_mode)?data.headphone_mode:null;
- if(deviceInfo.info)deviceInfo.info={...deviceInfo.info,headset_mode:data.headphone_mode};
+ if(deviceInfo.info)deviceInfo.info=deviceInfo.info.firmware===data.firmware?{...deviceInfo.info,headset_mode:data.headphone_mode}:null;
  const e=data.effects;
  for(const name of Object.keys(titles)){
   if(state.dirty.has(name))continue;const d=drafts[name];
@@ -338,6 +356,7 @@ async function start(){
  state.smoke=await invoke('smoke_mode');
  if(await invoke('preview_mode')){state.smoke=true;await initializeUpdates();controls();message('Prévia do design — sem comunicação USB.');return;}
  await initializeUpdates();
+ await window.__TAURI__.event.listen('update-progress',e=>{const p=e.payload;if(!p||!['downloading','verified','restoring','installing'].includes(p.phase))return;updates.progress=p;renderUpdates();});
  await window.__TAURI__.event.listen('operation-error',e=>{state.busy=false;message(e.payload,true);controls();});
  await window.__TAURI__.event.listen('closing-restore',()=>{state.busy=true;message('Restaurando os valores originais para fechar…');controls();});
  await window.__TAURI__.event.listen('meters',e=>{const d=e.payload,now=performance.now();if(d.sampled_at&&Date.now()-d.sampled_at>400)return;for(const key of ['voice','playback'])if(Number.isInteger(d[key])&&d[key]>=0&&d[key]<=32767){meters[key].raw=d[key];meters[key].last=now;}$('outputStatusText').textContent=d.output?'Saída padrão: '+d.output:'Saída padrão indisponível.';if(!d.connected){state.connected=false;controls();if(d.error&&!state.busy)message(d.error,true);}else if(!state.connected&&!state.busy)operation('inspect',{},false,null,true);});
@@ -380,9 +399,16 @@ async function start(){
   state.snapshot.headphone_mode='other';controls();passed=passed&&$('headphoneModeApply').disabled&&!prepareHeadphoneMode('stereo');
   state.snapshot.headphone_mode='stereo';state.dirty.delete('headphone_mode');snapshot({...state.snapshot,headphone_mode:'mono'});passed=passed&&headphoneModeDraft==='mono'&&$('headphoneModeStatus').textContent==='Mono confirmado'&&$('headphoneModeApply').disabled;
   state.smoke=true;
-  const infoSample={firmware:'<img src=x onerror="alert(1)">',usb_capture_channels:2,usb_playback_channels:2,usb_sample_rates_hz:[44100,48000],usb_transport_bits:[16,24],usb_speed:'Full Speed',usb_protocol:'UAC 1.0',reported_core_clock_mhz:240,internal_sample_rate_hz_inferred:44100,internal_frame_samples_inferred:256,windows_capture_sample_rate_hz:48000,windows_capture_channels:2,windows_capture_mix_bits:32,windows_playback_sample_rate_hz:48000,windows_playback_channels:2,windows_playback_mix_bits:32,headset_mode:'mono',voice_mode_status:'investigating'};
+  const infoSample={firmware:'<img src=x onerror="alert(1)">',usb_capabilities_verified:true,usb_capture_channels:2,usb_playback_channels:2,usb_sample_rates_hz:[44100,48000],usb_transport_bits:[16,24],usb_speed:'Full Speed',usb_protocol:'UAC 1.0',reported_core_clock_mhz:240,internal_sample_rate_hz_inferred:44100,internal_frame_samples_inferred:256,windows_capture_sample_rate_hz:48000,windows_capture_channels:2,windows_capture_mix_bits:32,windows_playback_sample_rate_hz:48000,windows_playback_channels:2,windows_playback_mix_bits:32,headset_mode:'mono',voice_mode_status:'investigating'};
   deviceInfo.info=infoSample;renderDeviceInfo();passed=passed&&$('deviceInfoFirmware').textContent===infoSample.firmware&&!$('deviceInfoFirmware').querySelector('img')&&$('deviceInfoClock').textContent==='240 MHz reportados'&&$('deviceInfoInternalRate').textContent==='44,1 kHz · inferido'&&$('deviceInfoBandwidth').textContent==='1,4112–2,304 Mb/s por caminho'&&$('deviceInfoCaptureMix').textContent==='48 kHz · 2 canais · 32 bits no mixer'&&$('deviceInfoHeadsetMode').textContent==='Mono'&&$('deviceInfoRefresh').disabled;
-  deviceInfo.info={firmware:'TEST'};renderDeviceInfo();passed=passed&&$('deviceInfoClock').textContent==='—'&&$('deviceInfoRates').textContent==='—'&&$('deviceInfoBandwidth').textContent==='—'&&$('deviceInfoCaptureMix').textContent==='Indisponível';
+  snapshot({...state.snapshot,firmware:'B5 0.7.1'});deviceInfo.info={...infoSample,firmware:'B5 0.7.1'};renderDeviceInfo();
+  passed=passed&&$('heroFirmware').textContent==='B5 0.7.1'&&$('deviceInfoRates').textContent==='44,1 kHz / 48 kHz';
+  snapshot({...state.snapshot,firmware:'B5 0.7.3'});
+  passed=passed&&deviceInfo.info===null&&$('capabilitiesFirmware').textContent==='B5 0.7.3';
+  deviceInfo.info={...infoSample,firmware:'B5 0.7.3',usb_capabilities_verified:false};renderDeviceInfo();
+  passed=passed&&['deviceInfoUsb','deviceInfoChannels','deviceInfoRates','deviceInfoTransportBits','deviceInfoBandwidth'].every(id=>$(id).textContent==='Não verificado nesta revisão')&&$('deviceInfoClock').textContent==='240 MHz reportados';
+  state.connected=false;controls();passed=passed&&$('heroFirmware').textContent==='AM8 USB';state.connected=true;
+  deviceInfo.info={firmware:'TEST'};renderDeviceInfo();passed=passed&&$('deviceInfoClock').textContent==='—'&&$('deviceInfoRates').textContent==='Não verificado nesta revisão'&&$('deviceInfoBandwidth').textContent==='Não verificado nesta revisão'&&$('deviceInfoCaptureMix').textContent==='Indisponível';
   deviceInfo.info=null;deviceInfo.busy=true;renderDeviceInfo();passed=passed&&$('deviceInfoRefresh').disabled&&$('deviceInfoRefresh').textContent==='Lendo…';Object.assign(deviceInfo,originalDeviceInfo);
   for(const name of Object.keys(titles))drafts[name]=originalDrafts[name];Object.assign(equalizers,originalEqualizers);state.dirty=originalDirty;state.snapshot=originalSnapshot;state.connected=originalConnected;state.pending=originalPending;headphoneModeDraft=originalHeadphoneModeDraft;chooseEq(originalDestination);renderCards();controls();
   const originalProfiles=profiles;profiles=[null,{...sample,name:'<img src=x onerror="alert(1)">'}];renderProfiles();
@@ -390,13 +416,16 @@ async function start(){
   for(const tab of ['effects','eq','profiles','capabilities','overview']){$('nav-tab-'+tab).click();passed=passed&&$('tab-'+tab).classList.contains('active');}
   passed=passed&&!$('eqCurve').innerHTML.includes('NaN');
   const originalUpdates={...updates},originalSmoke=state.smoke,originalBusy=state.busy,originalUpdatesConnected=state.connected;
-  const updateSample={current_version:'0.6.7',latest_version:'0.6.8',status:'available',download_url:'https://github.com/NightXXT/am8lab/releases/download/v0.6.8/AM8-Lab-Setup-v0.6.8.exe',release_name:'<img src=x onerror="alert(1)">',release_notes:'<script>alert(1)</script>\nTexto da versão',checked_at:1};
+  const updateSample={direct_update_ready:true,downloaded:false,current_version:'0.6.7',latest_version:'0.6.8',status:'available',download_url:'https://github.com/NightXXT/am8lab/releases/download/v0.6.8/AM8-Lab-Setup-v0.6.8.exe',release_name:'<img src=x onerror="alert(1)">',release_notes:'<script>alert(1)</script>\nTexto da versão',checked_at:1};
   updates.info=updateSample;renderUpdates();passed=passed&&$('updatesVersion').textContent==='Versão 0.6.7'&&!$('updatesDownload').hidden&&$('updatesDownload').disabled&&$('updatesCheck').disabled&&!$('updatesDot').hidden&&$('updatesReleaseName').textContent===updateSample.release_name&&$('updatesReleaseNotes').textContent===updateSample.release_notes&&!$('updatesReleaseDetails').querySelector('img,script');
   $('updatesOpen').click();passed=passed&&$('updatesDialog').open;$('updatesClose').click();passed=passed&&!$('updatesDialog').open;
-  await updateAction('check_updates');await updateAction('download_update');await updateAction('open_releases');
+  await updateAction('check_updates');await updateAction('download_update');await updateAction('install_update');await updateAction('open_releases');
   state.smoke=false;state.busy=true;state.connected=false;updates.restricted=false;updates.native=true;renderUpdates();passed=passed&&!$('updatesDownload').disabled&&!$('updatesCheck').disabled&&!$('updatesReleases').disabled;
   updates.busy='checking';renderUpdates();passed=passed&&$('updatesCheck').disabled&&$('updatesDownload').disabled&&$('updatesStateTitle').textContent==='Verificando atualizações…'&&!$('updatesCheckSpinner').hidden&&state.busy;
   updates.busy='';for(const status of ['idle','current','ahead','no_release','unavailable','error']){updates.info={...updateSample,status,download_url:null};renderUpdates();passed=passed&&$('updatesDownload').hidden&&$('updatesDot').hidden&&$('updatesStateTitle').textContent===updateStatuses[status][0]&&!$('updatesCheck').disabled&&!$('updatesReleases').disabled;}
+  updates.info={...updateSample,direct_update_ready:false};renderUpdates();passed=passed&&$('updatesDownload').hidden;
+  updates.info={...updateSample,downloaded:true};state.busy=false;renderUpdates();passed=passed&&$('updatesDownload').textContent==='Instalar e reiniciar'&&!$('updatesDownload').disabled;state.busy=true;renderUpdates();passed=passed&&$('updatesDownload').disabled;
+  updates.progress={phase:'downloading',received:50,total:100};renderUpdates();passed=passed&&!$('updatesProgress').hidden&&$('updatesProgressBar').value===50;updates.progress={phase:'verified'};renderUpdates();passed=passed&&$('updatesProgressLabel').textContent.includes('verificado');updates.progress=null;
   updates.info={...updateSample,latest_version:null};renderUpdates();passed=passed&&$('updatesDownload').hidden;
   updates.info={...updateSample,download_url:null};renderUpdates();passed=passed&&$('updatesDownload').hidden;
   state.smoke=originalSmoke;state.busy=originalBusy;state.connected=originalUpdatesConnected;Object.assign(updates,originalUpdates);renderUpdates();
