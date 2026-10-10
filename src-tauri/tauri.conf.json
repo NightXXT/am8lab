@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "AM8 Lab",
-  "version": "0.7.0",
+  "version": "0.7.2",
   "identifier": "local.am8lab.studio",
   "build": {
     "frontendDist": "../ui"
@@ -11,7 +11,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "AM8 Lab — Estúdio 0.7.0",
+        "title": "AM8 Lab — Estúdio 0.7.2",
         "width": 1440,
         "height": 900,
         "minWidth": 1100,
@@ -52,6 +52,19 @@
       "../LICENSE": "LICENSE",
       "../THIRD-PARTY-NOTICES.md": "THIRD-PARTY-NOTICES.md",
       "../THIRD-PARTY-LICENSES.txt": "THIRD-PARTY-LICENSES.txt"
+    },
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJGMUVEQTlFODUwMDg1NEUKUldST2hRQ0ZudG9lTDVybWhBcGZtMmtJRDMyYU1WZS9jZVppaWgwZ0lidTFvVFc4b013TmxlVVEK",
+      "endpoints": [
+        "https://raw.githubusercontent.com/NightXXT/am8lab/main/update.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      },
+      "requireSignedVersion": true
     }
   }
 }
