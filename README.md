@@ -159,7 +159,7 @@ Experimente **ruído + EQ suave + compressor leve**, com tom, transformação e 
 | :--- | :--- |
 | Sistema | Windows 10/11 x64 — sistemas alvo |
 | Microfone | FIFINE AM8 normal, conectado por USB |
-| Firmware aceito no código 0.7.1 | **B5 0.7.1 e B5 0.7.3**, com identidade e fluxo exatos |
+| Firmware aceito no código 0.7.2 | **B5 0.7.1 e B5 0.7.3**, com identidade e fluxo exatos |
 | Biblioteca / engine | **2.43.2 / 2.23.2** |
 | USB | VID:PID **3142:A010**, interface **MI_04** |
 | Fluxo | Modo **HunXiang** e fingerprint conhecido |
@@ -224,11 +224,13 @@ Na 0.7.2, o atualizador usa pacotes assinados com Minisign, versão vinculada à
 
 A interface permite somente comandos próprios tipados e escuta de eventos. Os valores são validados no Rust; o app não oferece comandos genéricos de shell, rede ou arquivos pela interface. Ele não grava voz, não faz upload de áudio e não inclui telemetria de rede. A consulta manual de atualizações acessa a API pública do GitHub por HTTPS e informa a versão do app no User-Agent.
 
-Na versão 0.6.9, **47 testes Rust passaram**; a medição física de nove aplicações confirmou os valores e sua restauração. A metodologia e os limites estão em [PERFORMANCE.md](docs/PERFORMANCE.md). A auditoria RustSec não foi repetida nesta versão.
+Na versão 0.7.2, **76 testes Rust passaram** e `cargo audit` 0.22.2 não encontrou alertas na categoria de vulnerabilidades, com dois avisos informativos fora do grafo Windows x64. A instalação real entre duas versões e a escuta/restauração física do B5 0.7.3 ainda precisam de validação. Veja [a revisão completa](docs/SECURITY-REVIEW.md).
 
-Na versão 0.6.7, **42 testes Rust passaram**, incluindo 11 testes novos para selecionar Releases, versões, limites e URLs de atualização, além de 17 verificações da interface de atualizações com transporte simulado. O resumo do teste do executável, instalador e consulta real está em [verificação da consulta](docs/UPDATES.md#verificação). Os testes históricos de efeitos e ganho continuam documentados em seus relatórios, sem nova avaliação auditiva nesta alteração.
+Histórico: na versão 0.6.9, **47 testes Rust passaram**; a medição física de nove aplicações confirmou os valores e sua restauração. A metodologia e os limites estão em [PERFORMANCE.md](docs/PERFORMANCE.md). A auditoria RustSec não foi repetida naquela versão.
 
-A revisão da versão 0.6.3 encontrou zero alertas classificados como vulnerabilidades e dois avisos informativos de dependências fora do alvo Windows. As versões das dependências foram mantidas; essa auditoria não foi repetida para 0.6.7. Foram acrescentados recursos do Windows para HTTPS via WinHTTP e abertura do navegador, com quatro comandos próprios tipados e URLs restritas. A interface não recebe um comando genérico para abrir qualquer endereço.
+Histórico: na versão 0.6.7, **42 testes Rust passaram**, incluindo 11 testes novos para selecionar Releases, versões, limites e URLs de atualização, além de 17 verificações da interface de atualizações com transporte simulado. O resumo do teste do executável, instalador e consulta real está em [verificação da consulta](docs/UPDATES.md#verificação). Os testes históricos de efeitos e ganho continuam documentados em seus relatórios, sem nova avaliação auditiva nesta alteração.
+
+Histórico: a revisão da versão 0.6.3 encontrou zero alertas classificados como vulnerabilidades e dois avisos informativos de dependências fora do alvo Windows. Na 0.6.6, foram acrescentados recursos do Windows para HTTPS via WinHTTP e abertura do navegador, com quatro comandos próprios tipados e URLs restritas; a 0.7.2 acrescentou os comandos tipados de download e instalação. A interface não recebe um comando genérico para abrir qualquer endereço.
 
 Isso **não garante ausência de vulnerabilidades**. Consulte a [revisão e seu escopo](docs/SECURITY-REVIEW.md) e a [política de segurança](SECURITY.md). O instalador pode precisar de internet para instalar WebView2.
 
@@ -267,7 +269,7 @@ am8-lab/
 
 [Compilar no Windows](docs/BUILD.md) · [Contribuir](CONTRIBUTING.md) · [Origem dos dados](docs/PROVENANCE.md) · [Dependências](docs/DEPENDENCIES.json)
 
-O workflow está configurado para verificar testes e dependências e gerar o setup como artefato. Na publicação da 0.6.7, [a execução no GitHub Actions](https://github.com/NightXXT/am8lab/actions/runs/37579658381) não iniciou o runner por um bloqueio de cobrança da conta. Os resultados locais estão em [VERIFICACAO.md](VERIFICACAO.md); não representam uma execução aprovada de CI no GitHub.
+O workflow verifica testes e dependências e gera o setup como artefato; a execução mais recente no commit `6a10cba` foi aprovada no [GitHub Actions](https://github.com/NightXXT/am8lab/actions/workflows/windows.yml). Os resultados locais de cada entrega estão em [VERIFICACAO.md](VERIFICACAO.md).
 
 ---
 
