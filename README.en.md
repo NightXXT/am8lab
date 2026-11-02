@@ -5,10 +5,10 @@
 ![AM8 Lab — Native DSP controls for the FIFINE AM8](docs/assets/banner.svg)
 
 ![Windows 10/11 x64](https://img.shields.io/badge/Windows-10%2F11%20x64-0078D4?style=flat-square)
-![Experimental 0.8.0](https://img.shields.io/badge/version-0.8.0%20experimental-8B5CF6?style=flat-square)
+![Experimental 0.8.1](https://img.shields.io/badge/version-0.8.1%20experimental-8B5CF6?style=flat-square)
 [![MIT license](https://img.shields.io/badge/license-MIT-22C55E?style=flat-square)](LICENSE)
 
-**[Download Windows installer](https://github.com/NightXXT/am8lab/releases/download/v0.8.0/AM8-Lab-Setup-v0.8.0.exe)** · [Portable ZIP](https://github.com/NightXXT/am8lab/releases/download/v0.8.0/AM8-Lab-Portable-v0.8.0.zip) · [SHA-256 hashes](https://github.com/NightXXT/am8lab/releases/download/v0.8.0/SHA256SUMS.txt) · [Release 0.7.2](https://github.com/NightXXT/am8lab/releases/tag/v0.8.0)
+**[Download Windows installer](https://github.com/NightXXT/am8lab/releases/download/v0.8.1/AM8-Lab-Setup-v0.8.1.exe)** · [Portable ZIP](https://github.com/NightXXT/am8lab/releases/download/v0.8.1/AM8-Lab-Portable-v0.8.1.zip) · [SHA-256 hashes](https://github.com/NightXXT/am8lab/releases/download/v0.8.1/SHA256SUMS.txt) · [Release 0.7.2](https://github.com/NightXXT/am8lab/releases/tag/v0.8.1)
 
 Experimental, unofficial Windows USB controller for the FIFINE AM8's native DSP. Built with Rust + Tauri; the UI is in Portuguese. Voice effects and headphone playback EQ run on the AM8, without PC audio processing, a virtual microphone or firmware flashing.
 
@@ -43,7 +43,7 @@ The microphone illustration has been removed from the Studio panel. USB, filter 
 
 ## Features and compatibility
 
-Download `AM8-Lab-Setup-v0.8.0.exe` and `SHA256SUMS.txt` from this repository's Releases. Check the hash, install, connect the microphone and apply controls. Setup installs for the current user and checks WebView2; if missing, Microsoft's embedded bootstrapper needs internet to install the runtime. Binaries are not Authenticode-signed; a hash is not a trust guarantee.
+Download `AM8-Lab-Setup-v0.8.1.exe` and `SHA256SUMS.txt` from this repository's Releases. Check the hash, install, connect the microphone and apply controls. Setup installs for the current user and checks WebView2; if missing, Microsoft's embedded bootstrapper needs internet to install the runtime. Binaries are not Authenticode-signed; a hash is not a trust guarantee.
 
 Hardware tests were performed on Windows x64, USB 3142:A010 / MI_04, B5 0.7.1 / library2.43.2 / engine2.23.2 / HunXiang and one known graph fingerprint. The 0.7.2 source also accepts the exact B5 0.7.3 identity with that same flow. Other revisions are refused; broad compatibility is not established.
 
