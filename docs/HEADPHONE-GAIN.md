@@ -6,7 +6,7 @@ O controle acrescenta ganho geral ao áudio do Windows reproduzido pelo AM8 e ou
 
 O descritor extraído deste AM8 B5 0.7.1 limita o pré-ganho a −24576..4608 em Q8.8, isto é, −96..+18 dB. +20 dB exigiria 5120, acima desse limite. O app oferece ganho geral de 0 a +18 dB; não altera outros módulos para ultrapassar a faixa.
 
-O pré-ganho enviado é `ganho geral − soma dos reforços positivos dos filtros ativos`. Filtros passa-altas/baixas não contribuem com ganho de banda. Exemplo: ganho geral +12 dB e reforços de +3 dB resultam em pré-ganho +9 dB. A interface mostra ganho geral, compensação e pré-ganho preparado, sem apresentar essa estimativa como medição acústica.
+O pré-ganho enviado é `ganho geral − pico estimado da curva dos filtros ativos`, arredondado para cima em dB. Reforços em frequências separadas não se somam, então só a sobreposição aumenta a compensação. Cortes não aumentam o ganho.
 
 Ganho positivo pode saturar o áudio. O EQ está depois do compressor de reprodução; não há proteção automática por um limitador novo. O padrão é 0 dB e a alteração só é enviada ao pressionar Aplicar. O app não aplica ganho alto automaticamente.
 

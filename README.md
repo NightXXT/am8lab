@@ -26,7 +26,7 @@ O **AM8 Lab** é um aplicativo experimental e não oficial que ajusta os efeitos
 Construído com **Rust + Tauri**, com interface em português, medidores de áudio e comparação com o som original da sessão.
 
 > [!IMPORTANT]
-> Validado inicialmente em **um AM8 normal USB, firmware B5 0.7.1**. O código 0.7.2 também aceita a identidade B5 0.7.3 com fluxo idêntico, com o alcance descrito acima; demais revisões são recusadas. O projeto não é afiliado nem endossado pela FIFINE.
+> Validado inicialmente em **um AM8 normal USB, firmware B5 0.7.1**. Outros microfones FIFINE encontrados pelo USB são aceitos como **Revisão não testada** quando todos os blocos do DSP respondem no formato esperado; os demais são recusados. O projeto não é afiliado nem endossado pela FIFINE.
 
 **Para começar:** baixe o setup, confira o SHA-256, instale e conecte o AM8 por USB. O programa confere a compatibilidade antes de habilitar os ajustes. Os binários ainda não têm assinatura Authenticode; consulte [o guia de instalação](docs/INSTALL.md).
 
@@ -60,7 +60,7 @@ A ilustração do microfone foi removida do painel Estúdio. As informações de
 | 🔊 **Ganho geral dos fones** | 0 a +18 dB no DSP, com botão para voltar a 0 dB; mantém a compensação dos filtros. |
 | ↔️ **Modo dos fones** | Estéreo ou soma mono no DAC nativo, com Aplicar, comparação e restauração. |
 | ℹ️ **Informações do AM8** | Canais, taxas e formatos, vazão PCM calculada, mixer Windows e clock reportado. |
-| 📊 **Compressor** | Uma faixa, com limiar, razão, ataque e liberação. |
+| 📊 **Compressor** | Uma faixa, com limiar, razão, ataque, liberação e ganho de compensação. |
 | 🎵 **Tom da voz** | Algoritmo padrão e Pro; Pro limitado a −3/+3 semitons nesta versão. |
 | 🧬 **Transformação Pro** | Controles independentes de altura e timbre. |
 | 🪩 **Reverb Sala/Plate** | Disponível como experimental; há relato de estalos na reprodução. |
@@ -159,12 +159,12 @@ Experimente **ruído + EQ suave + compressor leve**, com tom, transformação e 
 | :--- | :--- |
 | Sistema | Windows 10/11 x64 — sistemas alvo |
 | Microfone | FIFINE AM8 normal, conectado por USB |
-| Firmware aceito no código 0.7.2 | **B5 0.7.1 e B5 0.7.3**, com identidade e fluxo exatos |
+| Firmware | **B5 0.7.1** testado; **B5 0.7.3** e outras revisões com DSP no formato esperado são experimentais |
 | Biblioteca / engine | **2.43.2 / 2.23.2** |
-| USB | VID:PID **3142:A010**, interface **MI_04** |
-| Fluxo | Modo **HunXiang** e fingerprint conhecido |
+| USB | Fabricante **3142**, com canal de controle HID reconhecido pelo layout |
+| DSP | Fluxo conhecido ou verificação de todos os blocos usados |
 
-A identidade do aparelho é verificada antes de permitir alterações. **Não remova essa proteção para aceitar outro firmware sem investigação e testes.** Os testes físicos iniciais cobriram apenas uma unidade/revisão.
+O aparelho é verificado antes de permitir alterações. Os testes físicos iniciais cobriram apenas uma unidade/revisão; em uma **Revisão não testada**, comece com volume baixo e confira a restauração.
 
 <details>
 <summary><strong>Detalhes da verificação e recuperação</strong></summary>
@@ -191,7 +191,7 @@ Os comandos do AM8 Lab precisam da conexão **USB**. XLR sozinho não recebe ess
 
 ### Funciona em qualquer AM8?
 
-Ainda não. A validação física cobriu **uma unidade do AM8 normal com firmware B5 0.7.1** e fluxo interno conhecido. O programa bloqueia revisões desconhecidas antes de escrever parâmetros. Não remova essa verificação para forçar uma conexão.
+A validação física cobriu **uma unidade do AM8 normal com firmware B5 0.7.1**. Outros modelos e revisões FIFINE são detectados pelo USB e liberados como **Revisão não testada** se todos os blocos do DSP responderem no formato esperado; caso contrário, o programa recusa antes de escrever parâmetros.
 
 ### Como atualizo o programa?
 

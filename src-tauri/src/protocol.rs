@@ -3,6 +3,9 @@ use std::{collections::BTreeMap, sync::OnceLock, thread, time::Duration};
 
 pub type Result<T> = std::result::Result<T, String>;
 
+/// Label for a device that passed the block layout probe but has no physical test record.
+pub const UNTESTED_FIRMWARE: &str = "Revisão não testada";
+
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum Effect { Noise, Pitch, Pitchpro, Voicepro, Reverb, Plate, Feedback, Eq, Playbackeq, Compressor }
@@ -69,6 +72,48 @@ pub fn validate_word(block: Block, index: usize, value: i16) -> Result<()> {
     }
     let param = schema()[block.kind()].params.get(index - 1).ok_or("Seletor fora do bloco")?;
     if value < param.min || value > param.max { return Err("Parâmetro fora dos limites".into()); }
+    Ok(())
+}
+
+/// Standard biquad magnitude at 44.1 kHz, matching the curve drawn by the interface.
+fn filter_db(kind: i32, frequency: i32, q: i32, gain: i32, hz: f64) -> f64 {
+    let w = std::f64::consts::TAU * f64::from(frequency) / 44100.0;
+    let (c, s) = (w.cos(), w.sin());
+    let a = 10f64.powf(f64::from(gain) / 40.0);
+    let alpha = s / (2.0 * f64::from(q) / 1024.0);
+    let beta = 2.0 * a.sqrt() * alpha;
+    let (b, d) = match kind {
+        0 => ([1.0 + alpha * a, -2.0 * c, 1.0 - alpha * a], [1.0 + alpha / a, -2.0 * c, 1.0 - alpha / a]),
+        3 => ([(1.0 - c) / 2.0, 1.0 - c, (1.0 - c) / 2.0], [1.0 + alpha, -2.0 * c, 1.0 - alpha]),
+        4 => ([(1.0 + c) / 2.0, -(1.0 + c), (1.0 + c) / 2.0], [1.0 + alpha, -2.0 * c, 1.0 - alpha]),
+        1 => ([a * ((a + 1.0) - (a - 1.0) * c + beta), 2.0 * a * ((a - 1.0) - (a + 1.0) * c), a * ((a + 1.0) - (a - 1.0) * c - beta)],
+            [(a + 1.0) + (a - 1.0) * c + beta, -2.0 * ((a - 1.0) + (a + 1.0) * c), (a + 1.0) + (a - 1.0) * c - beta]),
+        _ => ([a * ((a + 1.0) + (a - 1.0) * c + beta), -2.0 * a * ((a - 1.0) + (a + 1.0) * c), a * ((a + 1.0) + (a - 1.0) * c - beta)],
+            [(a + 1.0) - (a - 1.0) * c + beta, 2.0 * ((a - 1.0) - (a + 1.0) * c), (a + 1.0) - (a - 1.0) * c - beta]),
+    };
+    let x = std::f64::consts::TAU * hz / 44100.0;
+    let magnitude = |v: [f64; 3]| (v[0] + v[1] * x.cos() + v[2] * (2.0 * x).cos()).hypot(v[1] * x.sin() + v[2] * (2.0 * x).sin());
+    20.0 * (magnitude(b) / magnitude(d)).max(1e-8).log10()
+}
+
+/// Headroom for the peak of the combined curve. Bands that do not overlap do not
+/// add up, so summing every boost would lower the whole signal without need.
+fn eq_headroom(filters: &[[i32; 4]]) -> i32 {
+    let peak = (0..230).map(|i| {
+        let hz = 20.0 * 800f64.powf(f64::from(i) / 229.0);
+        filters.iter().map(|[kind, frequency, q, gain]| filter_db(*kind, *frequency, *q, *gain, hz)).sum::<f64>()
+    }).fold(0.0, f64::max);
+    (peak - 0.25).ceil().max(0.0) as i32
+}
+
+/// Every block the app touches must answer with the expected size and limits.
+/// This replaces the exact graph match on revisions without a physical test record.
+pub fn probe_blocks(t: &mut impl Transport) -> Result<()> {
+    for block in [Block::Noise, Block::Pitch, Block::Eq, Block::PlaybackEq, Block::Compressor, Block::MicGain, Block::Autotune,
+        Block::Voice, Block::MainRoute, Block::VoiceRoute, Block::AutoRoute, Block::PitchPro, Block::VoicePro, Block::EchoEq,
+        Block::ReverbNative, Block::PlateNative, Block::WetRoute, Block::FeedbackFine] {
+        read_block(t, block).map_err(|error| format!("Este modelo usa um DSP diferente do conhecido ({block:?}): {error}"))?;
+    }
     Ok(())
 }
 
@@ -189,13 +234,19 @@ pub fn target(effect: Effect, enabled: bool, values: &BTreeMap<String, i32>, bef
         }
         *gain
     } else { 0 };
-    let gain_field_count = usize::from(values.contains_key("output_gain"));
+    let makeup = if let Some(gain) = values.get("makeup") {
+        if effect != Effect::Compressor || !(0..=18).contains(gain) {
+            return Err("Compensação permitida: 0 a 18 dB, apenas no compressor".into());
+        }
+        *gain
+    } else { 0 };
+    let gain_field_count = usize::from(values.contains_key("output_gain")) + usize::from(values.contains_key("makeup"));
     let mut out = before.to_vec();
     out[0] = i16::from(enabled);
     if matches!(effect, Effect::Eq | Effect::Playbackeq) && values.contains_key("f0_enabled") {
         if values.len() != 50 + gain_field_count { return Err("Esperados dez filtros completos".into()); }
         out[2] = 0;
-        let mut boost = 0;
+        let mut active = Vec::new();
         for i in 0..10 {
             let mut fields = Vec::new();
             for (key, lo, hi) in [("enabled",0,1),("type",0,4),("frequency",20,16000),("q",256,8192),("gain",-6,6)] {
@@ -204,12 +255,12 @@ pub fn target(effect: Effect, enabled: bool, values: &BTreeMap<String, i32>, bef
                 fields.push(v);
             }
             let gain = if fields[1] >= 3 { 0 } else { fields[4] };
-            if fields[0] == 1 { boost += gain.max(0); }
+            if fields[0] == 1 { active.push([fields[1], fields[2], fields[3], gain]); }
             let start = 3 + i * 5;
             out[start..start + 5].copy_from_slice(&[fields[0] as i16, fields[1] as i16, fields[2] as i16, fields[3] as i16, (gain * 256) as i16]);
         }
         // The device's EQ pre-gain is Q8.8; keep headroom compensation for band boosts.
-        out[1] = ((output_gain - boost) * 256) as i16;
+        out[1] = ((output_gain - eq_headroom(&active)) * 256) as i16;
         validate_block(effect.block(), &out)?;
         return Ok(out);
     }
@@ -237,8 +288,8 @@ pub fn target(effect: Effect, enabled: bool, values: &BTreeMap<String, i32>, bef
         Effect::Plate => { out[1..].copy_from_slice(&[8000,1,values["predelay"] as i16,60,values["decay"] as i16,(values["damping"] * 100) as i16,100]); }
         Effect::Feedback => { if out[1] > out[2] { return Err("Q mínimo maior que o máximo".into()); } }
         Effect::Eq | Effect::Playbackeq => {
-            let boost = ["bass", "mid", "treble"].iter().map(|key| values[*key].max(0)).sum::<i32>();
-            out[1] = ((output_gain - boost) * 256) as i16;
+            let bands = [[1, 150, 724, values["bass"]], [0, 1200, 724, values["mid"]], [2, 5000, 724, values["treble"]]];
+            out[1] = ((output_gain - eq_headroom(&bands)) * 256) as i16;
             out[2] = 0;
             for (start, key, kind, hz) in [(3, "bass", 1, 150), (8, "mid", 0, 1200), (13, "treble", 2, 5000)] {
                 out[start..start + 5].copy_from_slice(&[1, kind, hz, 724, (values[key] * 256) as i16]);
@@ -251,7 +302,7 @@ pub fn target(effect: Effect, enabled: bool, values: &BTreeMap<String, i32>, bef
             out[14] = (values["ratio"] * 100) as i16;
             out[18] = values["attack"] as i16;
             out[22] = values["release"] as i16;
-            out[26] = 0;
+            out[26] = (makeup * 100) as i16;
         }
     }
     validate_block(effect.block(), &out)?;
@@ -322,12 +373,28 @@ mod tests {
         let values = BTreeMap::from([("pitch".into(), 1), ("hidden".into(), 0)]);
         assert!(target(Effect::Pitch, true, &values, &[0, 0]).is_err());
     }
+    #[test] fn compressor_makeup_uses_the_native_pregain_field() {
+        let before = [0, 0, 3, 724, 724, 300, 3000, 0, 0, 0, 0, 100, 100, 100, 100, 1, 1, 1, 1, 1000, 1000, 1000, 1000, 0, 0, 0, 0];
+        let mut values = BTreeMap::from([("threshold".into(), -18), ("ratio".into(), 2), ("attack".into(), 10), ("release".into(), 200)]);
+        assert_eq!(target(Effect::Compressor, true, &values, &before).unwrap()[26], 0);
+        values.insert("makeup".into(), 6);
+        assert_eq!(target(Effect::Compressor, true, &values, &before).unwrap()[26], 600);
+        for invalid in [-1, 19] { values.insert("makeup".into(), invalid); assert!(target(Effect::Compressor, true, &values, &before).is_err()); }
+        assert!(target(Effect::Noise, true, &BTreeMap::from([("threshold".into(), -40), ("makeup".into(), 1)]), &[0, -4500, 3, 5, 500]).is_err());
+    }
+    #[test] fn eq_headroom_follows_the_curve_peak_instead_of_summing_separate_bands() {
+        let separate = [[0, 100, 2896, 6], [0, 1000, 2896, 6], [0, 10000, 2896, 6]];
+        assert_eq!(eq_headroom(&separate), 6);
+        assert_eq!(eq_headroom(&[[0, 1000, 724, 3], [0, 1000, 724, 3]]), 6);
+        assert_eq!(eq_headroom(&[[0, 1000, 724, -6]]), 0);
+        assert_eq!(eq_headroom(&[]), 0);
+    }
     #[test] fn eq_compensates_combined_boost_and_preserves_disabled_filters() {
         let mut words = vec![0; 53];
         for start in (3..53).step_by(5) { words[start + 2] = 200; words[start + 3] = 724; }
         let vals = BTreeMap::from([("bass".into(), 4), ("mid".into(), -2), ("treble".into(), 3)]);
         let out = target(Effect::Eq, true, &vals, &words).unwrap();
-        assert_eq!(out[1], -7 * 256); assert_eq!(out[7], 4 * 256); assert_eq!(out[12], -2 * 256);
+        assert_eq!(out[1], -4 * 256); assert_eq!(out[7], 4 * 256); assert_eq!(out[12], -2 * 256);
         assert_eq!(out[18], 0);
     }
     #[test] fn complete_eq_checks_each_filter_before_mutation() {
@@ -374,7 +441,7 @@ mod tests {
         values.insert("f9_type".into(), 4);
         let out = target(Effect::Playbackeq, true, &values, &words).unwrap();
         assert_eq!(out[52], 0);
-        assert_eq!(out[1], -54 * 256);
+        assert_eq!(out[1], -51 * 256);
         values.remove("f9_q");
         assert!(target(Effect::Playbackeq, true, &values, &words).is_err());
     }
@@ -392,7 +459,7 @@ mod tests {
         assert!(validate_word(Block::PlaybackEq, 1, 19 * 256).is_err());
         values.insert("bass".into(), 6); values.insert("mid".into(), -6); values.insert("treble".into(), 3);
         let shaped = target(Effect::Playbackeq, true, &values, &words).unwrap();
-        assert_eq!(shaped[1], 9 * 256);
+        assert_eq!(shaped[1], 12 * 256);
         assert_eq!(shaped[7], 6 * 256); assert_eq!(shaped[12], -6 * 256); assert_eq!(shaped[17], 3 * 256);
     }
     #[test] fn headphone_gain_compensates_only_active_full_eq_boosts() {
@@ -412,7 +479,7 @@ mod tests {
         values.insert("f8_enabled".into(), 0);
         values.insert("f9_type".into(), 4);
         let out = target(Effect::Playbackeq, true, &values, &words).unwrap();
-        assert_eq!(out[1], -30 * 256);
+        assert_eq!(out[1], -27 * 256);
         assert_eq!(out[43], 0); assert_eq!(out[52], 0);
         // Cuts never increase the manual gain through negative compensation.
         for i in 0..10 { values.insert(format!("f{i}_gain"), -6); }

@@ -121,7 +121,8 @@ impl Session {
         let gain = read_block(t, Block::MicGain)?;
         let legacy_active = effects[&Block::Autotune][0] != 0 || effects[&Block::Voice][0] != 0 || effects[&Block::AutoRoute][1] != 1;
         let headphone_mode = protocol::read_dac_mode(t).ok().map(|mode| if mode == 0 { "stereo" } else { "mono" }.into());
-        Ok(Snapshot { device: "FIFINE AM8 USB • 3142:A010", firmware: t.firmware(), serial: t.serial().into(), effects,
+        let device = if t.firmware() == protocol::UNTESTED_FIRMWARE { "Microfone FIFINE USB" } else { "FIFINE AM8 USB • 3142:A010" };
+        Ok(Snapshot { device, firmware: t.firmware(), serial: t.serial().into(), effects,
             gain_db: f64::from(gain[2]) / 100.0, recovery_pending: self.pending(), comparison: self.comparison.is_some(),
             legacy_pending: self.legacy_pending() || legacy_active, headphone_mode })
     }
@@ -139,8 +140,10 @@ impl Session {
                 return Err("Um processador externo à sessão está ativo; restaure com a ferramenta que o ativou".into());
             }
         }
-        for (block,expected) in [(Block::MainRoute,vec![1,0,600]),(Block::VoiceRoute,vec![1,1,0]),(Block::WetRoute,vec![1,1,0])] {
-            if !self.journal.originals.contains_key(&block) && prepared_block(t, &mut prepared, block)?!=expected {
+        // Stock channel gains vary between models; only the known revisions pin them.
+        let compared=if t.firmware()==protocol::UNTESTED_FIRMWARE { 2 } else { 3 };
+        for (block,expected) in [(Block::MainRoute,[1,0,600]),(Block::VoiceRoute,[1,1,0]),(Block::WetRoute,[1,1,0])] {
+            if !self.journal.originals.contains_key(&block) && prepared_block(t, &mut prepared, block)?[..compared]!=expected[..compared] {
                 return Err("Um canal de áudio fora da sessão está alterado; operações recusadas".into());
             }
         }
@@ -433,6 +436,14 @@ mod tests {
     }
     impl Drop for Fake { fn drop(&mut self) { let _ = fs::remove_file(&self.journal); } }
     fn vals(items: &[(&str, i32)]) -> BTreeMap<String, i32> { items.iter().map(|(k,v)| ((*k).into(), *v)).collect() }
+    #[test] fn untested_revision_accepts_a_different_stock_channel_gain_only() {
+        let (mut s,mut t)=setup();t.firmware=protocol::UNTESTED_FIRMWARE;
+        t.words.get_mut(&Block::MainRoute).unwrap()[2]=300;
+        s.apply(&mut t, Effect::Noise, true, vals(&[("threshold", -40)])).unwrap();
+        s.restore(&mut t).unwrap();
+        t.words.get_mut(&Block::MainRoute).unwrap()[1]=1;
+        assert!(s.apply(&mut t, Effect::Noise, true, vals(&[("threshold", -40)])).is_err());
+    }
     #[test] fn snapshot_preserves_the_actual_supported_firmware() {
         let (s,mut t)=setup();t.firmware="B5 0.7.3";
         assert_eq!(s.inspect(&mut t).unwrap().firmware,"B5 0.7.3");assert_eq!(t.writes,0);
@@ -795,7 +806,7 @@ mod tests {
         s.apply(&mut t, Effect::Playbackeq, true, vals(&[("bass", 0), ("mid", 0), ("treble", 0), ("output_gain", 3)])).unwrap();
         assert_eq!(t.words[&Block::PlaybackEq][1], 3 * 256);
         s.apply(&mut t, Effect::Playbackeq, true, vals(&[("bass", 6), ("mid", -2), ("treble", 3), ("output_gain", 18)])).unwrap();
-        assert_eq!(t.words[&Block::PlaybackEq][1], 9 * 256);
+        assert_eq!(t.words[&Block::PlaybackEq][1], 12 * 256);
         assert_eq!(t.words[&Block::Eq], microphone);
         assert_eq!(s.journal.originals[&Block::PlaybackEq], original[&Block::PlaybackEq]);
         let active = t.words.clone();

@@ -7,7 +7,7 @@ type Handle = *mut c_void;
 struct Guid { a: u32, b: u16, c: u16, d: [u8; 8] }
 const HID_GUID: Guid = Guid { a: 0x4d1e55b2, b: 0xf16f, c: 0x11cf, d: [0x88, 0xcb, 0, 0x11, 0x11, 0, 0, 0x30] };
 
-/// Exact identities only; DSP mode, flow name and complete graph remain mandatory.
+/// Identities with a known graph. Any other FIFINE device needs protocol::probe_blocks.
 /// The 0.7.3 identity and matching flow come from a user-supplied read-only report.
 pub const ACCEPTED_FIRMWARE: [([u8; 14], &str); 2] = [
     ([0x42,0,7,1,2,43,2,2,23,2,2,b'B',b'5',1], "B5 0.7.1"),
@@ -38,11 +38,15 @@ pub fn validate_flow(total: usize, graph: &[u8], complete: bool) -> Result<()> {
     Ok(())
 }
 #[derive(Default)]
-struct FirmwareState { identity: Option<[u8;14]>, label: &'static str }
+struct FirmwareState { identity: Option<Vec<u8>>, label: &'static str }
 impl FirmwareState {
     fn accepted(id: &[u8]) -> Result<Self> {
         let label=validate_identity(id)?;
-        Ok(Self { identity:Some(id.try_into().map_err(|_| "Identidade incompleta")?),label })
+        Ok(Self { identity:Some(id.to_vec()),label })
+    }
+    fn untested(id: &[u8]) -> Result<Self> {
+        if id.is_empty() { return Err("O microfone não informou sua identidade".into()); }
+        Ok(Self { identity:Some(id.to_vec()),label:protocol::UNTESTED_FIRMWARE })
     }
     fn check(&mut self, current: Result<Vec<u8>>) -> Result<()> {
         let result=current.and_then(|id| {
@@ -124,10 +128,18 @@ impl HidDevice {
         if unsafe { CM_Get_Device_Interface_ListW(&HID_GUID, ptr::null(), paths.as_mut_ptr(), count, 0) } != 0 {
             return Err("Não foi possível ler as interfaces HID".into());
         }
-        let candidates: Vec<String> = paths.split(|v| *v == 0).filter(|p| !p.is_empty()).map(String::from_utf16_lossy)
-            .filter(|p| p.to_lowercase().contains("vid_3142&pid_a010&mi_04")).collect();
-        if candidates.len() != 1 { return Err(format!("Conecte um único AM8 USB compatível. Interfaces encontradas: {}", candidates.len())); }
-        let path = wide(&candidates[0]);
+        // Model and interface numbers vary, so the HID layout identifies the control channel.
+        let mut found = Vec::new();
+        let mut last_error = None;
+        for path in paths.split(|v| *v == 0).filter(|p| !p.is_empty()).map(String::from_utf16_lossy).filter(|p| p.to_lowercase().contains("vid_3142")) {
+            match Self::open_path(&path) { Ok(device) => found.push(device), Err(error) => last_error = Some(error) }
+        }
+        if found.len() > 1 { return Err(format!("Conecte um único microfone FIFINE por USB. Interfaces encontradas: {}", found.len())); }
+        found.pop().ok_or_else(|| last_error.unwrap_or_else(|| "Nenhum microfone FIFINE encontrado pelo USB".into()))
+    }
+
+    fn open_path(candidate: &str) -> Result<Self> {
+        let path = wide(candidate);
         let handle = unsafe { CreateFileW(path.as_ptr(), 0xC0000000, 3, ptr::null(), 3, 0, ptr::null_mut()) };
         if handle as isize == -1 { return Err(win_error("Não foi possível abrir o AM8")); }
         let mut device = Self { handle, serial: String::new(), query_interval_ms: 8, firmware: FirmwareState::default() };
@@ -180,6 +192,13 @@ impl HidDevice {
     pub fn check_identity(&mut self) -> Result<()> {
         let current=self.query(0,&[]);
         self.firmware.check(current)
+    }
+    fn known_flow(&mut self) -> Result<()> {
+        let mode=self.query(0x80,&[6])?;
+        let name=self.query(0xFC,&[])?;
+        validate_mode_and_name(&mode,&name)?;
+        let (total,graph,complete)=self.read_flow()?;
+        validate_flow(total,&graph,complete)
     }
     /// Read-only internal flow: declared length, bytes and complete end marker.
     pub fn read_flow(&mut self) -> Result<(usize,Vec<u8>,bool)> {
@@ -251,13 +270,12 @@ impl Transport for HidDevice {
     fn guard(&mut self) -> Result<()> {
         self.firmware=FirmwareState::default();
         let id=self.query(0,&[])?;
-        validate_identity(&id)?;
-        let mode=self.query(0x80,&[6])?;
-        let name=self.query(0xFC,&[])?;
-        validate_mode_and_name(&mode,&name)?;
-        let (total,graph,complete)=self.read_flow()?;
-        validate_flow(total,&graph,complete)?;
-        self.firmware=FirmwareState::accepted(&id)?;
+        if accepted_firmware(&id).is_some() && self.known_flow().is_ok() {
+            self.firmware=FirmwareState::accepted(&id)?;
+            return Ok(());
+        }
+        protocol::probe_blocks(self)?;
+        self.firmware=FirmwareState::untested(&id)?;
         Ok(())
     }
     fn firmware(&self) -> &'static str { self.firmware.label }
@@ -290,6 +308,13 @@ mod tests {
             assert!(state.check(Ok(other.to_vec())).is_err());assert!(state.label.is_empty());
             assert!(state.check(Ok(id.to_vec())).is_err());
         }
+    }
+    #[test] fn untested_revision_keeps_its_identity_for_periodic_checks() {
+        assert!(FirmwareState::untested(&[]).is_err());
+        let mut state=FirmwareState::untested(&[0x42,0,7,5]).unwrap();
+        assert_eq!(state.label,protocol::UNTESTED_FIRMWARE);
+        state.check(Ok(vec![0x42,0,7,5])).unwrap();
+        assert!(state.check(Ok(vec![0x42,0,7,6])).is_err());assert!(state.label.is_empty());
     }
     #[test] fn periodic_failure_clears_identity() {
         let mut state=FirmwareState::accepted(&ACCEPTED_FIRMWARE[1].0).unwrap();

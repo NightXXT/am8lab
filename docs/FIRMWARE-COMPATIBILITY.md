@@ -2,7 +2,7 @@
 
 A versão do aplicativo **0.7.2** inclui suporte experimental ao firmware **B5 0.7.3**. Os números do aplicativo e do firmware são independentes. O programa não grava nem atualiza firmware.
 
-São aceitas somente duas identidades completas de 14 bytes:
+Duas identidades têm fluxo conhecido:
 
 | Firmware | Resposta de identidade |
 | --- | --- |
@@ -10,6 +10,12 @@ São aceitas somente duas identidades completas de 14 bytes:
 | B5 0.7.3 | `42 00 07 03 02 2b 02 02 17 02 02 42 35 01` |
 
 Biblioteca 2.43.2 e engine 2.23.2 permanecem obrigatórias. O guard também exige VID:PID 3142:A010, MI_04, layout HID conhecido, modo de sete bytes com prefixo `00 ff 00 06`, byte 5 zero e marcador final 1; nome `HunXiang`; fluxo interno completo de 2931 bytes, comprimento declarado correspondente e SHA-256 `bd9dbe74994cbb96cb2981c6bb340aae5b894409cf290378c6e0201ffc2f131d`.
+
+## Outros modelos e revisões
+
+O app procura interfaces HID do fabricante `3142` e usa a que tem o layout de controle conhecido, sem exigir PID nem interface. Identidade ou fluxo diferentes não recusam o aparelho sozinhos: todos os blocos do DSP usados pelo app são lidos e precisam ter o tamanho e os limites esperados. Aprovado, o aparelho aparece como **Revisão não testada**, e o diário, a confirmação por leitura e a restauração continuam ativos. Blocos de mesmo formato em outro modelo não provam que têm a mesma função: comece com volume baixo.
+
+## Verificação das revisões conhecidas
 
 O rótulo só é aceito após a verificação completa. A checagem periódica compara a identidade exata da conexão atual, detectando também a troca entre 0.7.1 e 0.7.3. Falhas apagam o estado validado e exigem reconexão. O diário continua vinculado ao serial; os parâmetros e o modo dos fones continuam com confirmação e restauração.
 

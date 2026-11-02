@@ -68,21 +68,21 @@ $('updatesClose').onclick=()=>$('updatesDialog').close();
 $('updatesDialog').addEventListener('close',()=>$('updatesOpen').focus());
 $('updatesCheck').onclick=()=>updateAction('check_updates');$('updatesReleases').onclick=()=>updateAction('open_releases');$('updatesDownload').onclick=()=>updateAction(updates.info?.downloaded===true?'install_update':'download_update');
 const fields={
- noise:[['threshold','Limiar',-70,-20,-40,'dB'],['ratio','Intensidade',1,10,4,''],['attack','Ataque',1,100,10,'ms'],['release','Liberação',50,1000,200,'ms']],
+ noise:[['threshold','Limiar',-70,-20,-45,'dB'],['ratio','Intensidade',1,10,3,''],['attack','Ataque',1,100,5,'ms'],['release','Liberação',50,1000,500,'ms']],
  pitch:[['pitch','Altura',-3,3,0,'st']],
  voicepro:[['pitch','Altura',80,120,100,'%'],['formant','Timbre',90,110,110,'%']],
  reverb:[['mix','Sinal reverberado',0,60,60,'%'],['room','Tamanho da sala',0,60,60,'%'],['damping','Amortecimento',0,100,50,'%'],['wet_gain','Volume do efeito',-18,-6,-6,'dB']],
  plate:[['decay','Decaimento',20,60,40,'%'],['predelay','Pré-atraso',0,2500,2500,'amostras'],['damping','Amortecimento',0,100,50,'%'],['wet_gain','Volume do efeito',-18,-6,-6,'dB']],
- compressor:[['threshold','Limiar',-40,-6,-18,'dB'],['ratio','Razão',1,6,2,':1'],['attack','Ataque',1,100,10,'ms'],['release','Liberação',50,1000,200,'ms']],feedback:[]};
+ compressor:[['threshold','Limiar',-40,-6,-18,'dB'],['ratio','Razão',1,6,2,':1'],['attack','Ataque',1,100,10,'ms'],['release','Liberação',50,1000,200,'ms'],['makeup','Ganho de compensação',0,18,4,'dB']],feedback:[]};
 const titles={noise:'Redução de ruído',pitch:'Tom da voz',voicepro:'Transformação de voz Pro',reverb:'Reverberação',compressor:'Compressor',feedback:'Supressão de microfonia'};
-const hints={noise:'Atenua sons baixos entre as palavras.',pitch:'Pro: −3 a +3 semitons. Use com Transformação Pro e Reverb desligados.',voicepro:'Altura e timbre independentes. Desativa o Tom da voz. Use com Reverb desligado.',reverb:'Experimental: foram relatados estalos na reprodução. Desative Tom da voz e Transformação Pro antes de usar.',compressor:'Controla a dinâmica em uma única faixa.',feedback:'Experimental. Redução de microfonia ainda não validada.'};
+const hints={noise:'Atenua sons baixos entre as palavras. Se o fim das palavras sumir, baixe o limiar.',pitch:'Pro: −3 a +3 semitons. Use com Transformação Pro e Reverb desligados.',voicepro:'Altura e timbre independentes. Desativa o Tom da voz. Use com Reverb desligado.',reverb:'Experimental: foram relatados estalos na reprodução. Desative Tom da voz e Transformação Pro antes de usar.',compressor:'Controla a dinâmica em uma única faixa. Use o ganho de compensação para recuperar o volume reduzido.',feedback:'Experimental. Redução de microfonia ainda não validada.'};
 const drafts={};
 for(const name of Object.keys(titles))drafts[name]={enabled:false,mode:name==='pitch'?'pitchpro':name,values:Object.fromEntries(fields[name].map(f=>[f[0],f[4]]))};
 const emptyEq=()=>({enabled:false,filters:Array.from({length:10},()=>({enabled:0,type:0,frequency:200,q:724,gain:0}))});
 const emptyPlaybackEq=()=>({...emptyEq(),outputGain:0});
 const equalizers={eq:emptyEq(),playbackeq:emptyPlaybackEq()};let eqDestination='eq';
 const selectedEq=()=>equalizers[eqDestination];
-const eqBoost=eq=>eq.filters.reduce((n,f)=>n+(f.enabled&&f.type<3?Math.max(0,f.gain):0),0);
+const eqBoost=eq=>{let peak=0;for(let i=0;i<230;i++){const hz=20*(800**(i/229));peak=Math.max(peak,eq.filters.reduce((n,f)=>n+filterDb(f,hz),0));}return Math.max(0,Math.ceil(peak-.25));};
 const eqPreGain=eq=>(Object.hasOwn(eq,'outputGain')?eq.outputGain:0)-eqBoost(eq);
 fields.pitchstandard=[['pitch','Altura',-12,12,0,'st']];
 const fieldList=name=>fields[name==='reverb'?drafts.reverb.mode:name==='pitch'&&drafts.pitch.mode==='pitch'?'pitchstandard':name];
@@ -152,7 +152,7 @@ function renderFirmware(){
  const identified=typeof firmware==='string'&&!!firmware;
  $('firmware').textContent=identified?'Firmware '+firmware:'Conecte o AM8 por USB';
  $('heroFirmware').textContent=identified?firmware:'AM8 USB';
- $('heroFirmwareNote').textContent=identified?(firmware==='B5 0.7.3'?'Compatibilidade experimental':'Identidade e fluxo conferidos'):'Conecte para identificar';
+ $('heroFirmwareNote').textContent=identified?(firmware==='B5 0.7.1'?'Identidade e fluxo conferidos':'Compatibilidade experimental'):'Conecte para identificar';
  $('capabilitiesFirmware').textContent=identified?firmware:'AM8 USB';
 }
 function renderDeviceInfo(){
@@ -243,7 +243,7 @@ function snapshot(data,reset=false){
   if(name==='pitch'){if(e.pitch_pro[0])d.mode='pitchpro';else if(e.pitch[0])d.mode='pitch';}
   if(name==='reverb'){if(e.plate_native[0])d.mode='plate';else if(e.reverb_native[0])d.mode='reverb';}
   const key={pitch:d.mode==='pitchpro'?'pitch_pro':'pitch',voicepro:'voice_pro',reverb:d.mode==='plate'?'plate_native':'reverb_native',feedback:'feedback_fine'}[name]||name,w=e[key];d.enabled=!!w[0];
-  const v=name==='noise'?{threshold:w[1]/100,ratio:w[2],attack:w[3],release:w[4]}:name==='pitch'?{pitch:w[1]/10}:name==='voicepro'?{pitch:w[1],formant:w[2]}:name==='compressor'?{threshold:w[10]/100,ratio:w[14]/100,attack:w[18],release:w[22]}:name==='reverb'?(d.mode==='plate'?{decay:w[5],predelay:w[3],damping:w[6]/100,wet_gain:e.wet_route[2]/100}:{mix:w[2],room:w[4],damping:w[5],wet_gain:e.wet_route[2]/100}):{};
+  const v=name==='noise'?{threshold:w[1]/100,ratio:w[2],attack:w[3],release:w[4]}:name==='pitch'?{pitch:w[1]/10}:name==='voicepro'?{pitch:w[1],formant:w[2]}:name==='compressor'?{threshold:w[10]/100,ratio:w[14]/100,attack:w[18],release:w[22],makeup:w[26]/100}:name==='reverb'?(d.mode==='plate'?{decay:w[5],predelay:w[3],damping:w[6]/100,wet_gain:e.wet_route[2]/100}:{mix:w[2],room:w[4],damping:w[5],wet_gain:e.wet_route[2]/100}):{};
   d.values=Object.fromEntries(fieldList(name).map(f=>[f[0],(w[0]||state.pending)&&Number.isInteger(v[f[0]])&&v[f[0]]>=f[2]&&v[f[0]]<=f[3]?v[f[0]]:f[4]]));
  }
  for(const [effect,key] of [['eq','eq'],['playbackeq','playback_eq']])if(!state.dirty.has(effect)&&Array.isArray(e[key])){const w=e[key];const eq={enabled:!!w[0],filters:Array.from({length:10},(_,i)=>{const j=3+i*5;return {enabled:w[j],type:w[j+1],frequency:w[j+2],q:w[j+3],gain:w[j+4]/256};})};if(effect==='playbackeq')eq.outputGain=w[1]/256+eqBoost(eq);equalizers[effect]=eq;}
@@ -311,6 +311,8 @@ function eqProfileValid(value,playback=false){
  const knownKeys=hasKeys(value,['enabled','filters'])||playback&&hasKeys(value,['enabled','filters','outputGain']);
  return knownKeys&&(!Object.hasOwn(value,'outputGain')||Number.isInteger(value.outputGain)&&value.outputGain>=0&&value.outputGain<=18)&&typeof value.enabled==='boolean'&&Array.isArray(value.filters)&&value.filters.length===10&&value.filters.every(f=>hasKeys(f,['enabled','type','frequency','q','gain'])&&Object.entries({enabled:[0,1],type:[0,4],frequency:[20,16000],q:[256,8192],gain:[-6,6]}).every(([k,[lo,hi]])=>Number.isInteger(f[k])&&f[k]>=lo&&f[k]<=hi));
 }
+// Profiles saved before the makeup control keep the volume they had.
+function upgradeProfile(p){const values=p?.drafts?.compressor?.values;if(isRecord(values)&&!Object.hasOwn(values,'makeup'))values.makeup=0;return p;}
 function profileValid(p){
  if(!(hasKeys(p,['name','drafts','eq'])||hasKeys(p,['name','drafts','eq','playbackEq']))||typeof p.name!=='string'||!p.name.trim()||p.name.length>profileNameLimit)return false;
  if(!hasKeys(p.drafts,Object.keys(titles))||!eqProfileValid(p.eq)||Object.hasOwn(p,'playbackEq')&&!eqProfileValid(p.playbackEq,true))return false;
@@ -321,7 +323,7 @@ function profileValid(p){
  }
  return true;
 }
-try{const raw=localStorage.getItem(profileKey)||'[]';if(raw.length<200000){const parsed=JSON.parse(raw);if(Array.isArray(parsed))profiles=parsed.filter(profileValid).slice(0,20);}}catch{}
+try{const raw=localStorage.getItem(profileKey)||'[]';if(raw.length<200000){const parsed=JSON.parse(raw);if(Array.isArray(parsed))profiles=parsed.map(upgradeProfile).filter(profileValid).slice(0,20);}}catch{}
 function loadProfile(p){
  if(!profileValid(p)){message('Perfil inválido; nenhum ajuste enviado.',true);return false;}
  for(const name of Object.keys(titles)){drafts[name]=structuredClone(p.drafts[name]);state.dirty.add(name);}equalizers.eq=structuredClone(p.eq);state.dirty.add('eq');
@@ -385,7 +387,7 @@ async function start(){
   loadProfile(sample);passed=passed&&JSON.stringify(equalizers.eq)===JSON.stringify(sample.eq)&&JSON.stringify(equalizers.playbackeq)===JSON.stringify(sample.playbackEq);
   chooseEq('playbackeq');$('eqOutputGain').value='18';$('eqOutputGain').oninput();$('eqFlat').onclick();passed=passed&&equalizers.playbackeq.outputGain===18&&equalizers.playbackeq.enabled&&eqRequest().values.output_gain===18&&eqPreGain(selectedEq())===18;
   $('eqOutputGainReset').onclick();passed=passed&&equalizers.playbackeq.outputGain===0&&$('eqOutputGain').value==='0'&&eqRequest().values.output_gain===0;
-  const nativeEq=Array.from({length:53},(_,i)=>i>=3&&((i-3)%5===2)?200:i>=3&&((i-3)%5===3)?724:0),nativePlayback=[...nativeEq];nativePlayback[0]=1;nativePlayback[1]=10*256;nativePlayback[3]=1;nativePlayback[7]=2*256;nativePlayback[8]=1;nativePlayback[9]=4;nativePlayback[12]=6*256;
+  const nativeEq=Array.from({length:53},(_,i)=>i>=3&&((i-3)%5===2)?200:i>=3&&((i-3)%5===3)?724:0),nativePlayback=[...nativeEq];nativePlayback[0]=1;nativePlayback[1]=10*256;nativePlayback[3]=1;nativePlayback[7]=2*256;nativePlayback[8]=1;nativePlayback[9]=4;nativePlayback[10]=20;nativePlayback[12]=6*256;
   snapshot({firmware:'TEST',gain_db:0,recovery_pending:true,headphone_mode:'stereo',effects:{noise:[0,-4000,4,10,200],pitch:[0,0],pitch_pro:[0,0],voice_pro:[0,100,100],reverb_native:[0,0,60,0,60,50],plate_native:[0,0,0,2500,0,40,5000],wet_route:[0,0,-600],feedback_fine:[0],compressor:Array(23).fill(0),eq:nativeEq,playback_eq:nativePlayback}},true);
   passed=passed&&equalizers.playbackeq.outputGain===12&&eqPreGain(equalizers.playbackeq)===10&&$('eqOutputGain').value==='12'&&$('eqPreGainValue').textContent==='+10 dB'&&Object.keys(equalizers.eq).length===2;
   // Pure interface state checks: selecting a mode prepares it without any invoke.
