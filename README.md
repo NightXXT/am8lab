@@ -7,16 +7,16 @@
 **Software experimental para ajustar sua voz e os fones no DSP do FIFINE AM8 USB.**
 
 ![Windows 10/11 x64](https://img.shields.io/badge/Windows-10%2F11%20x64-0078D4?style=flat-square)
-![Versão 0.7.2 experimental](https://img.shields.io/badge/vers%C3%A3o-0.7.2%20experimental-8B5CF6?style=flat-square)
+![Versão 0.8.0 experimental](https://img.shields.io/badge/vers%C3%A3o-0.8.0%20experimental-8B5CF6?style=flat-square)
 [![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-22C55E?style=flat-square)](LICENSE)
 
-**[Baixar instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.7.2/AM8-Lab-Setup-v0.7.2.exe)** · [Versão portátil](https://github.com/NightXXT/am8lab/releases/download/v0.7.2/AM8-Lab-Portable-v0.7.2.zip) · [Hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.7.2/SHA256SUMS.txt) · [Release 0.7.2](https://github.com/NightXXT/am8lab/releases/tag/v0.7.2)
+**[Baixar instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.8.0/AM8-Lab-Setup-v0.8.0.exe)** · [Versão portátil](https://github.com/NightXXT/am8lab/releases/download/v0.8.0/AM8-Lab-Portable-v0.8.0.zip) · [Hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.8.0/SHA256SUMS.txt) · [Release 0.7.2](https://github.com/NightXXT/am8lab/releases/tag/v0.8.0)
 
 [Instalação](#instalação) · [Atualizações](#atualizações) · [Recursos](#recursos) · [Compatibilidade](#compatibilidade) · [Segurança](SECURITY.md) · [English](README.en.md)
 
 </div>
 
-> **Versão 0.7.2:** download e instalação pelo aplicativo, com assinatura verificada e restauração antes de reiniciar. Suporte experimental a **B5 0.7.1 e B5 0.7.3**, com identidade e fluxo exatos. Efeitos e restauração no 0.7.3 aguardam teste físico. Veja [compatibilidade e diagnóstico](docs/FIRMWARE-COMPATIBILITY.md).
+> **Versão 0.8.0:** ganho de compensação no compressor, EQ que preserva o volume e detecção de outros modelos FIFINE como revisão não testada. **Desde a 0.7.2:** download e instalação pelo aplicativo, com assinatura verificada e restauração antes de reiniciar. Suporte experimental a **B5 0.7.1 e B5 0.7.3**, com identidade e fluxo exatos. Efeitos e restauração no 0.7.3 aguardam teste físico. Veja [compatibilidade e diagnóstico](docs/FIRMWARE-COMPATIBILITY.md).
 
 
 ---
@@ -104,8 +104,8 @@ Os medidores usam uma **escala visual relativa**, sem calibração em dB. A resp
 
 **Requisitos:** Windows 10/11 x64, WebView2 e AM8 USB compatível.
 
-1. Abra a [Release 0.7.2](https://github.com/NightXXT/am8lab/releases/tag/v0.7.2).
-2. Baixe o [instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.7.2/AM8-Lab-Setup-v0.7.2.exe) e os [hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.7.2/SHA256SUMS.txt).
+1. Abra a [Release 0.7.2](https://github.com/NightXXT/am8lab/releases/tag/v0.8.0).
+2. Baixe o [instalador Windows](https://github.com/NightXXT/am8lab/releases/download/v0.8.0/AM8-Lab-Setup-v0.8.0.exe) e os [hashes SHA-256](https://github.com/NightXXT/am8lab/releases/download/v0.8.0/SHA256SUMS.txt).
 3. Confira o hash conforme [o guia de instalação](docs/INSTALL.md) e execute o setup.
 4. Conecte o AM8 por **USB** e abra o programa.
 
@@ -114,7 +114,7 @@ O setup instala para o usuário atual, cria atalhos e inclui desinstalador. Se o
 <details>
 <summary><strong>Prefere uma versão portátil?</strong></summary>
 
-Baixe `AM8-Lab-Portable-v0.7.2.zip` nas Releases, confira o hash, extraia a pasta e abra `AM8-Lab.exe`. Mantenha os arquivos de licença que acompanham o programa. WebView2 precisa estar instalado.
+Baixe `AM8-Lab-Portable-v0.8.0.zip` nas Releases, confira o hash, extraia a pasta e abra `AM8-Lab.exe`. Mantenha os arquivos de licença que acompanham o programa. WebView2 precisa estar instalado.
 
 </details>
 
